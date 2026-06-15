@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning City Fest 10 — บันทึกการเรียนรู้</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
+         background: #f5f6f8; color: #1a1a1a; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 10px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: #777; margin: 0 0 8px; }
+  .qnum { display: inline-flex; width: 22px; height: 22px; border-radius: 50%;
+          background: #e6f1fb; color: #185fa5; font-size: 12px; font-weight: 600;
+          align-items: center; justify-content: center; margin-right: 8px; }
+  .qlabel { font-size: 14px; font-weight: 500; margin: 0 0 4px; }
+  .qdesc { font-size: 11px; color: #888; margin: 0 0 10px; padding-left: 30px; }
+  .req { color: #d64; }
+  textarea { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc;
+             border-radius: 8px; font-family: inherit; resize: vertical; min-height: 70px; }
+  textarea:focus { outline: none; border-color: #d85a30; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 7px 12px; border-radius: 20px; font-size: 13px; border: 1px solid #ccc;
+          background: #fff; color: #555; cursor: pointer; user-select: none; }
+  .chip.sel { background: #e6f1fb; color: #185fa5; border-color: #85b7eb; }
+  .radio { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px;
+           cursor: pointer; margin-bottom: 4px; border: 1px solid #eee; }
+  .radio.sel { background: #e6f1fb; border-color: #85b7eb; }
+  .stars { display: flex; gap: 6px; }
+  .star { font-size: 30px; color: #ddd; cursor: pointer; }
+  .star.lit { color: #ef9f27; }
+  .upload { border: 2px dashed #ccc; border-radius: 10px; padding: 20px; text-align: center;
+            cursor: pointer; }
+  .upload.has { border-color: #1DB447; background: #f0f9f4; }
+  button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
+           border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #d85a30; color: #fff; }
+  .btn-primary:disabled { opacity: .5; }
+  .prog { height: 4px; background: #e5e5e5; border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+  .prog-fill { height: 100%; background: #1d9e75; width: 0; transition: width .3s; }
+  #loading, #status { text-align: center; padding: 40px 20px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #d85a30;
+             border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+  #debugLine { font-size: 11px; color: #999; margin-top: 8px; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>กำลังโหลด...</p>
+  <p id="debugLine"></p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="prog"><div class="prog-fill" id="prog"></div></div>
+
+  <div class="card">
+    <h1>บันทึกการเรียนรู้</h1>
+    <p class="sub" id="nameHint"></p>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">1</span>นวัตกรรมใน 6 บูธมุ่งแก้ปัญหาเรื่องอะไร <span class="req">*</span></p>
+    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+    <div class="chips" data-q="q1"></div>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">2</span>"หัวใจ" ที่ทำให้นวัตกรรมสำเร็จคืออะไร <span class="req">*</span></p>
+    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+    <div class="chips" data-q="q2"></div>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">3</span>บูธที่ต่อยอดได้จริงที่สุด + เหตุผล <span class="req">*</span></p>
+    <div data-q="q3radio"></div>
+    <textarea id="q3_reason" placeholder="เหตุผล..." oninput="upd()"></textarea>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">4</span>สรุปองค์ความรู้ / ไอเดียที่ประทับใจ <span class="req">*</span></p>
+    <textarea id="q4_idea" placeholder="..." oninput="upd()"></textarea>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">5</span>อุปสรรคใหญ่ที่สุดที่คาดว่าจะเจอ <span class="req">*</span></p>
+    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+    <div class="chips" data-q="q5"></div>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">6</span>นวัตกรรมที่ "ทำแล้วไปต่อไม่ได้" เพราะอะไร <span class="req">*</span></p>
+    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+    <div class="chips" data-q="q6"></div>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">7</span>อยากให้ ศธภ.10 สนับสนุนอะไร</p>
+    <p class="qdesc">ไม่บังคับ</p>
+    <textarea id="q7_support" placeholder="..." oninput="upd()"></textarea>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">8</span>โอกาสต่อยอด / ประยุกต์ใช้ในงานของท่าน <span class="req">*</span></p>
+    <textarea id="q8_application" placeholder="..." oninput="upd()"></textarea>
+  </div>
+
+  <div class="card">
+    <p class="qlabel"><span class="qnum">9</span>ความมั่นใจว่าจะนำไปใช้จริง <span class="req">*</span></p>
+    <p class="qdesc">1 = น้อยที่สุด, 5 = มากที่สุด</p>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <div class="card">
+    <p class="qlabel">รูป EduVenture Passport (สติกเกอร์ครบ 6) <span class="req">*</span></p>
+    <p class="qdesc">JPG / PNG / HEIC</p>
+    <label class="upload" id="uploadZone">
+      <input type="file" id="photo" accept="image/*" style="display:none" onchange="onPhoto(event)">
+      <div id="uploadText">📷 แตะเพื่อถ่ายหรือเลือกรูป</div>
+    </label>
+  </div>
+
+  <button class="btn-primary" id="submitBtn" onclick="submitForm()" disabled>ส่งบันทึกการเรียนรู้</button>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  // ═══════════════ ตั้งค่า ═══════════════
+  var LIFF_ID = '2010395312-ctysReut';                 // LIFF: reflection
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbylLfGTMtcmRWls8zpLJ9MnxiFSU9Cna6KhfViZT1K51kuFWouzJUETtXJ05V4DCnCw/exec';
+  // ════════════════════════════════════════
+
+  var lineUserId = '';
+  var photoBase64 = '';
+  var photoMime = '';
+  var starVal = 0;
+  var q3booth = null;
+
+  var OPT = {
+    q1: ['คุณภาพการเรียนรู้/ผลสัมฤทธิ์','เด็กหลุดนอกระบบ/เหลื่อมล้ำ','ทักษะอาชีพ-ทักษะชีวิต','ภูมิปัญญา/อัตลักษณ์','ชุมชน-ภาคีเครือข่าย'],
+    q2: ['ครู/ผู้นำที่ทุ่มเท','การออกแบบกิจกรรมที่ดี','แรงหนุนจากชุมชน-ภาคี','ทรัพยากร/งบประมาณ','ข้อมูล/เทคโนโลยี'],
+    q5: ['ขาดคนสานต่อ/ย้าย-เกษียณ','ไม่มีงบต่อเนื่อง','ไม่มีเวลา','ขาดความรู้-ทักษะ','ผู้บริหารไม่สนับสนุน','ไม่มีข้อมูลยืนยันผล'],
+    q6: ['ขาดคนสานต่อ/ย้าย-เกษียณ','ไม่มีงบต่อเนื่อง','ไม่มีเวลา','ขาดความรู้-ทักษะ','ผู้บริหารไม่สนับสนุน','ไม่มีข้อมูลยืนยันผล']
+  };
+  var BOOTHS = ['อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','บึงกาฬ','ศธภ.10'];
+
+  function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
+  function show(id){ ['loading','app','status'].forEach(function(x){
+    document.getElementById(x).classList.toggle('hidden', x!==id); }); }
+
+  async function api(action, payload){
+    var idToken = '';
+    try { idToken = liff.getIDToken() || ''; } catch(e){}
+    var res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ apiAction: action, payload: payload || {}, idToken: idToken })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function init(){
+    try {
+      dbg('1) liff.init...');
+      await liff.init({ liffId: LIFF_ID });
+      dbg('2) init OK');
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      var profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      buildForm();
+      show('app');
+    } catch (e) {
+      dbg('❌ ' + e.message);
+      showError('เชื่อมต่อไม่ได้: ' + e.message);
+    }
+  }
+
+  function buildForm(){
+    ['q1','q2','q5','q6'].forEach(function(q){
+      var box = document.querySelector('[data-q="'+q+'"]');
+      box.innerHTML = OPT[q].map(function(o){
+        return '<span class="chip" onclick="toggleChip(this)">'+o+'</span>';
+      }).join('');
+    });
+    var r = document.querySelector('[data-q="q3radio"]');
+    r.innerHTML = BOOTHS.map(function(b,i){
+      return '<label class="radio" onclick="selBooth('+i+',this)">' +
+        '<input type="radio" name="q3" value="'+b+'"> สำนักงานศึกษาธิการจังหวัด'+b+'</label>';
+    }).join('');
+    var s = document.getElementById('stars');
+    s.innerHTML = [1,2,3,4,5].map(function(n){
+      return '<span class="star" onclick="setStar('+n+')">★</span>';
+    }).join('');
+  }
+
+  function toggleChip(el){ el.classList.toggle('sel'); upd(); }
+  function selBooth(i, el){
+    q3booth = BOOTHS[i];
+    document.querySelectorAll('[data-q="q3radio"] .radio').forEach(function(r,idx){
+      r.classList.toggle('sel', idx===i);
+    });
+    upd();
+  }
+  function setStar(n){
+    starVal = n;
+    document.querySelectorAll('.star').forEach(function(s,i){ s.classList.toggle('lit', i<n); });
+    upd();
+  }
+
+  function getChips(q){
+    return Array.prototype.slice.call(
+      document.querySelectorAll('[data-q="'+q+'"] .chip.sel')
+    ).map(function(c){ return c.textContent; });
+  }
+
+  function onPhoto(ev){
+    var file = ev.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      photoBase64 = e.target.result;
+      photoMime = file.type;
+      document.getElementById('uploadZone').classList.add('has');
+      document.getElementById('uploadText').textContent = '✅ ' + file.name;
+      upd();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function upd(){
+    var done = 0, total = 10;
+    if (getChips('q1').length) done++;
+    if (getChips('q2').length) done++;
+    if (q3booth && document.getElementById('q3_reason').value.trim()) done++;
+    if (document.getElementById('q4_idea').value.trim()) done++;
+    if (getChips('q5').length) done++;
+    if (getChips('q6').length) done++;
+    if (document.getElementById('q8_application').value.trim()) done++;
+    if (starVal > 0) done++;
+    if (photoBase64) done++;
+    done++; // q7 ไม่บังคับ
+    var pct = Math.round(done/total*100);
+    document.getElementById('prog').style.width = pct + '%';
+    document.getElementById('submitBtn').disabled = (done < total);
+  }
+
+  async function submitForm(){
+    var payload = {
+      lineUserId: lineUserId,
+      q1_topics: getChips('q1').join(','),
+      q2_heart: getChips('q2').join(','),
+      q3_booth: q3booth,
+      q3_reason: document.getElementById('q3_reason').value.trim(),
+      q4_idea: document.getElementById('q4_idea').value.trim(),
+      q5_obstacles: getChips('q5').join(','),
+      q6_sustainability: getChips('q6').join(','),
+      q7_support: document.getElementById('q7_support').value.trim(),
+      q8_application: document.getElementById('q8_application').value.trim(),
+      q9_confidence: starVal,
+      passportPhotoBase64: photoBase64,
+      photoMimeType: photoMime
+    };
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+    try {
+      var res = await api('saveReflection', payload);
+      if (res.ok) showSuccess('ส่งบันทึกการเรียนรู้สำเร็จ\nเจ้าหน้าที่จะตรวจสอบและแจ้งผลผ่าน LINE');
+      else showError(errMsg(res.reason));
+    } catch (e) { showError(e.message); }
+  }
+
+  function errMsg(reason){
+    var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ท่านส่งบันทึกแล้ว',
+      NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', MISSING_FIELD:'กรุณากรอกข้อมูลให้ครบ',
+      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
+    return m[reason] || 'เกิดข้อผิดพลาด';
+  }
+  function showSuccess(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
+      '<button class="btn-primary" onclick="closeLiff()">ปิดหน้านี้</button>';
+    show('status');
+  }
+  function showError(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">⚠️</div><p>'+msg+'</p>' +
+      '<button class="btn-primary" onclick="show(\'app\')">กลับไปแก้ไข</button>';
+    show('status');
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = false; btn.textContent = 'ส่งบันทึกการเรียนรู้';
+  }
+  function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
+
+  init();
+</script>
+</body>
+</html>

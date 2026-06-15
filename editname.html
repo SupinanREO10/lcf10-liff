@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning City Fest 10 — แก้ไขชื่อ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
+         background: #f5f6f8; color: #1a1a1a; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: #777; margin: 0 0 16px; }
+  label { display: block; font-size: 13px; color: #555; margin: 12px 0 4px; }
+  .req { color: #d64; }
+  select, input[type=text] { width: 100%; padding: 10px; font-size: 15px;
+          border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+  select:focus, input:focus { outline: none; border-color: #1DB447; }
+  .preview { background: #f0f9f4; border-radius: 8px; padding: 16px; text-align: center; margin-top: 12px; }
+  .preview-label { font-size: 11px; color: #888; margin: 0 0 6px; }
+  .preview-name { font-size: 20px; font-weight: 600; margin: 0; color: #1a1a1a; }
+  .preview-sub { font-size: 12px; color: #666; margin: 4px 0 0; }
+  .warn { background: #fff4e0; color: #8a5a00; border-radius: 8px; padding: 10px 12px;
+          font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+  button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
+           border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #1DB447; color: #fff; }
+  .btn-primary:disabled { opacity: .5; }
+  .btn-secondary { background: #fff; color: #555; border: 1px solid #ccc; margin-top: 8px; }
+  #loading, #status { text-align: center; padding: 40px 20px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #1DB447;
+             border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+  .locked-msg { text-align: center; padding: 30px 20px; color: #555; }
+  #debugLine { font-size: 11px; color: #999; margin-top: 8px; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loadingText">กำลังโหลด...</p>
+  <p id="debugLine"></p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="card">
+    <h1>แก้ไขข้อมูลบนเกียรติบัตร</h1>
+    <p class="sub">ตรวจสอบและแก้ไขให้ถูกต้องก่อนยืนยัน</p>
+    <div class="warn">ชื่อนี้จะใช้บนเกียรติบัตร เมื่อยืนยันแล้วจะไม่สามารถแก้ไขได้</div>
+
+    <label>คำนำหน้า <span class="req">*</span></label>
+    <select id="prefix" onchange="updatePreview()"></select>
+
+    <label>ชื่อ <span class="req">*</span></label>
+    <input type="text" id="firstName" oninput="updatePreview()" placeholder="ชื่อ">
+
+    <label>นามสกุล <span class="req">*</span></label>
+    <input type="text" id="lastName" oninput="updatePreview()" placeholder="นามสกุล">
+
+    <div class="preview">
+      <p class="preview-label">ชื่อบนเกียรติบัตร</p>
+      <p class="preview-name" id="previewName">—</p>
+      <p class="preview-sub" id="previewSub"></p>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="saveBtn" onclick="save()">บันทึกและดำเนินการต่อ</button>
+  <button class="btn-secondary" onclick="closeLiff()">ยกเลิก</button>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  // ═══════════════ ตั้งค่า ═══════════════
+  var LIFF_ID = '2010395312-jVsx9BnB';                 // LIFF: editname
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbylLfGTMtcmRWls8zpLJ9MnxiFSU9Cna6KhfViZT1K51kuFWouzJUETtXJ05V4DCnCw/exec';
+  // ════════════════════════════════════════
+
+  var PID = '';
+  var lineUserId = '';
+  var participant = null;
+
+  function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
+  function show(id){ ['loading','app','status'].forEach(function(x){
+    document.getElementById(x).classList.toggle('hidden', x!==id); }); }
+
+  // เรียก backend GAS ผ่าน fetch (แนบ ID token เพื่อยืนยันตัวตน)
+  async function api(action, payload){
+    var idToken = '';
+    try { idToken = liff.getIDToken() || ''; } catch(e){}
+    var res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // เลี่ยง CORS preflight
+      body: JSON.stringify({ apiAction: action, payload: payload || {}, idToken: idToken })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  function resolvePid(){
+    var sp = new URLSearchParams(location.search);
+    if (sp.get('pid')) return sp.get('pid');
+    var ls = sp.get('liff.state');
+    if (ls){ try{
+      var raw = ls.charAt(0)==='?'?ls.substring(1):ls;
+      var inner = new URLSearchParams(decodeURIComponent(raw));
+      if (inner.get('pid')) return inner.get('pid');
+    }catch(e){} }
+    return '';
+  }
+
+  async function init(){
+    try {
+      dbg('1) liff.init...');
+      await liff.init({ liffId: LIFF_ID });
+      dbg('2) init OK');
+      if (!liff.isLoggedIn()) { dbg('→ login'); liff.login(); return; }
+      var profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      PID = resolvePid();
+      dbg('3) PID=' + PID + ' · โหลดข้อมูล...');
+      var p = await api('getParticipantForEdit', { participantId: PID });
+      if (p && p.reason === 'UNAUTHORIZED') { showError('ยืนยันตัวตนไม่สำเร็จ — ตรวจว่าเปิด scope openid ใน LIFF'); return; }
+      if (!p) { showError('ไม่พบข้อมูล (PID=' + PID + ')'); return; }
+      if (p.nameLocked) { showLocked(); return; }
+      participant = p;
+      buildForm(p);
+      show('app');
+    } catch (e) {
+      dbg('❌ ' + e.message);
+      showError('เชื่อมต่อไม่ได้: ' + e.message);
+    }
+  }
+
+  async function buildForm(p){
+    var prefixes = await api('getPrefixes');
+    var sel = document.getElementById('prefix');
+    sel.innerHTML = prefixes.map(function(x){
+      return '<option value="'+x+'"'+(x===p.prefix?' selected':'')+'>'+x+'</option>';
+    }).join('');
+    document.getElementById('firstName').value = p.firstName || '';
+    document.getElementById('lastName').value = p.lastName || '';
+    updatePreview();
+  }
+
+  function updatePreview(){
+    var pf = document.getElementById('prefix').value;
+    var fn = document.getElementById('firstName').value.trim();
+    var ln = document.getElementById('lastName').value.trim();
+    document.getElementById('previewName').textContent = (pf+' '+fn+' '+ln).trim() || '—';
+    if (participant) document.getElementById('previewSub').textContent =
+      (participant.position||'') + ' · ' + (participant.organization||'');
+    document.getElementById('saveBtn').disabled = !(fn && ln);
+  }
+
+  async function save(){
+    var payload = {
+      participantId: PID,
+      prefix: document.getElementById('prefix').value,
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      lineUserId: lineUserId
+    };
+    var btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+    try {
+      var res = await api('saveNameEdit', payload);
+      if (res.ok) showSuccess('บันทึกชื่อเรียบร้อย: ' + res.fullName + '\nกรุณากลับไปกด "ยืนยัน" ในแชต');
+      else showError(errMsg(res.reason));
+    } catch (e) { showError(e.message); }
+    btn.disabled = false; btn.textContent = 'บันทึกและดำเนินการต่อ';
+  }
+
+  function errMsg(reason){
+    var m = { EMPTY_NAME:'กรุณากรอกชื่อและนามสกุล', INVALID_PREFIX:'คำนำหน้าไม่ถูกต้อง',
+      NAME_LOCKED:'ชื่อถูกล็อกแล้ว ไม่สามารถแก้ไขได้', NOT_FOUND:'ไม่พบข้อมูล',
+      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ' };
+    return m[reason] || 'เกิดข้อผิดพลาด';
+  }
+  function showSuccess(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
+      '<button class="btn-primary" onclick="closeLiff()">ปิดหน้านี้</button>';
+    show('status');
+  }
+  function showError(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">⚠️</div><p>'+msg+'</p>' +
+      '<button class="btn-secondary" onclick="closeLiff()">ปิด</button>';
+    show('status');
+  }
+  function showLocked(){
+    document.getElementById('status').innerHTML =
+      '<div class="locked-msg"><div style="font-size:40px">🔒</div>' +
+      '<p>ชื่อของท่านถูกยืนยันแล้ว<br>หากต้องการแก้ไข กรุณาติดต่อเจ้าหน้าที่</p>' +
+      '<button class="btn-secondary" onclick="closeLiff()">ปิด</button></div>';
+    show('status');
+  }
+  function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
+
+  init();
+</script>
+</body>
+</html>

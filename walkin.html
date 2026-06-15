@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning City Fest 10 — ลงทะเบียนหน้างาน</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
+         background: #f5f6f8; color: #1a1a1a; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: #777; margin: 0 0 8px; }
+  label { display: block; font-size: 13px; color: #555; margin: 12px 0 4px; }
+  .req { color: #d64; }
+  select, input { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #ccc;
+          border-radius: 8px; font-family: inherit; }
+  select:focus, input:focus { outline: none; border-color: #1DB447; }
+  .err-field { border-color: #d64 !important; }
+  button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
+           border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #1DB447; color: #fff; }
+  .btn-primary:disabled { opacity: .5; }
+  #loading, #status { text-align: center; padding: 40px 20px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #1DB447;
+             border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+  .field-err { font-size: 11px; color: #d64; margin: 4px 0 0; }
+  #debugLine { font-size: 11px; color: #999; margin-top: 8px; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>กำลังโหลด...</p>
+  <p id="debugLine"></p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="card">
+    <h1>ลงทะเบียนหน้างาน (Walk-in)</h1>
+    <p class="sub">กรอกข้อมูลเพื่อเข้าร่วมงาน</p>
+
+    <label>คำนำหน้า <span class="req">*</span></label>
+    <select id="prefix"></select>
+
+    <label>ชื่อ <span class="req">*</span></label>
+    <input type="text" id="firstName" placeholder="ชื่อ">
+
+    <label>นามสกุล <span class="req">*</span></label>
+    <input type="text" id="lastName" placeholder="นามสกุล">
+
+    <label>ตำแหน่ง / บทบาท</label>
+    <select id="position"></select>
+
+    <label>หน่วยงาน <span class="req">*</span></label>
+    <input type="text" id="organization" placeholder="ชื่อหน่วยงาน">
+
+    <label>จังหวัด <span class="req">*</span></label>
+    <select id="province"></select>
+
+    <label>เบอร์โทรศัพท์ <span class="req">*</span></label>
+    <input type="tel" id="phone" placeholder="08XXXXXXXX" maxlength="10">
+    <p class="field-err hidden" id="phoneErr">เบอร์ไม่ถูกต้อง (ต้องขึ้นต้น 0 และมี 10 หลัก)</p>
+
+    <label>อีเมล</label>
+    <input type="email" id="email" placeholder="example@email.com">
+    <p class="field-err hidden" id="emailErr">รูปแบบอีเมลไม่ถูกต้อง</p>
+  </div>
+
+  <button class="btn-primary" id="submitBtn" onclick="submitForm()">ลงทะเบียน</button>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  // ═══════════════ ตั้งค่า ═══════════════
+  var LIFF_ID = '2010395312-6aYNs9GP';                 // LIFF: walkin
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbylLfGTMtcmRWls8zpLJ9MnxiFSU9Cna6KhfViZT1K51kuFWouzJUETtXJ05V4DCnCw/exec';
+  // ════════════════════════════════════════
+
+  var lineUserId = '';
+
+  function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
+  function show(id){ ['loading','app','status'].forEach(function(x){
+    document.getElementById(x).classList.toggle('hidden', x!==id); }); }
+
+  async function api(action, payload){
+    var idToken = '';
+    try { idToken = liff.getIDToken() || ''; } catch(e){}
+    var res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ apiAction: action, payload: payload || {}, idToken: idToken })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function init(){
+    try {
+      dbg('1) liff.init...');
+      await liff.init({ liffId: LIFF_ID });
+      dbg('2) init OK');
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      var profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      await buildOptions();
+      show('app');
+    } catch (e) {
+      dbg('❌ ' + e.message);
+      showError('เชื่อมต่อไม่ได้: ' + e.message);
+    }
+  }
+
+  async function buildOptions(){
+    var prefixes = await api('getPrefixes');
+    var roles = await api('getRoles');
+    var provs = await api('getProvinces');
+    document.getElementById('prefix').innerHTML =
+      prefixes.map(function(x){ return '<option>'+x+'</option>'; }).join('');
+    document.getElementById('position').innerHTML =
+      '<option value="">— เลือก —</option>' +
+      roles.map(function(x){ return '<option>'+x+'</option>'; }).join('');
+    document.getElementById('province').innerHTML =
+      '<option value="">— เลือกจังหวัด —</option>' +
+      provs.map(function(x){ return '<option>'+x+'</option>'; }).join('');
+  }
+
+  function validate(){
+    var ok = true;
+    var phone = document.getElementById('phone').value.replace(/[-\s]/g,'');
+    var email = document.getElementById('email').value.trim();
+    var phoneOk = /^0[0-9]{8,9}$/.test(phone);
+    var emailOk = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    document.getElementById('phoneErr').classList.toggle('hidden', phoneOk || !phone);
+    document.getElementById('emailErr').classList.toggle('hidden', emailOk);
+    if (!phoneOk) ok = false;
+    if (!emailOk) ok = false;
+    ['firstName','lastName','organization','province'].forEach(function(f){
+      if (!document.getElementById(f).value.trim()) ok = false;
+    });
+    return ok;
+  }
+
+  async function submitForm(){
+    if (!validate()) { alert('กรุณากรอกข้อมูลให้ครบและถูกต้อง'); return; }
+    var payload = {
+      lineUserId: lineUserId,
+      prefix: document.getElementById('prefix').value,
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      position: document.getElementById('position').value,
+      organization: document.getElementById('organization').value.trim(),
+      province: document.getElementById('province').value,
+      phone: document.getElementById('phone').value.replace(/[-\s]/g,''),
+      email: document.getElementById('email').value.trim()
+    };
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'กำลังลงทะเบียน...';
+    try {
+      var res = await api('registerWalkIn', payload);
+      if (res.ok) showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + '\nท่านสามารถใช้งานทุกเมนูได้แล้ว');
+      else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber);
+      else showError(errMsg(res.reason));
+    } catch (e) { showError(e.message); }
+  }
+
+  function errMsg(reason){
+    var m = { EMPTY_NAME:'กรุณากรอกชื่อและนามสกุล', INVALID_PHONE:'เบอร์โทรไม่ถูกต้อง',
+      INVALID_EMAIL:'อีเมลไม่ถูกต้อง', UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
+    return m[reason] || 'เกิดข้อผิดพลาด';
+  }
+  function showSuccess(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
+      '<button class="btn-primary" onclick="closeLiff()">เริ่มใช้งาน</button>';
+    show('status');
+  }
+  function showError(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">⚠️</div><p>'+msg+'</p>' +
+      '<button class="btn-primary" onclick="show(\'app\')">ลองใหม่</button>';
+    show('status');
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = false; btn.textContent = 'ลงทะเบียน';
+  }
+  function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
+
+  init();
+</script>
+</body>
+</html>
