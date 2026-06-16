@@ -116,15 +116,6 @@
     <div class="stars" id="stars"></div>
   </div>
 
-  <div class="card">
-    <p class="qlabel">รูป EduVenture Passport (สติกเกอร์ครบ 6) <span class="req">*</span></p>
-    <p class="qdesc">JPG / PNG / HEIC</p>
-    <label class="upload" id="uploadZone">
-      <input type="file" id="photo" accept="image/*" style="display:none" onchange="onPhoto(event)">
-      <div id="uploadText">📷 แตะเพื่อถ่ายหรือเลือกรูป</div>
-    </label>
-  </div>
-
   <button class="btn-primary" id="submitBtn" onclick="submitForm()" disabled>ส่งบันทึกการเรียนรู้</button>
 </div>
 
@@ -138,8 +129,6 @@
   // ════════════════════════════════════════
 
   var lineUserId = '';
-  var photoBase64 = '';
-  var photoMime = '';
   var starVal = 0;
   var q3booth = null;
 
@@ -221,22 +210,8 @@
     ).map(function(c){ return c.textContent; });
   }
 
-  function onPhoto(ev){
-    var file = ev.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e){
-      photoBase64 = e.target.result;
-      photoMime = file.type;
-      document.getElementById('uploadZone').classList.add('has');
-      document.getElementById('uploadText').textContent = '✅ ' + file.name;
-      upd();
-    };
-    reader.readAsDataURL(file);
-  }
-
   function upd(){
-    var done = 0, total = 10;
+    var done = 0, total = 9;
     if (getChips('q1').length) done++;
     if (getChips('q2').length) done++;
     if (q3booth && document.getElementById('q3_reason').value.trim()) done++;
@@ -245,7 +220,6 @@
     if (getChips('q6').length) done++;
     if (document.getElementById('q8_application').value.trim()) done++;
     if (starVal > 0) done++;
-    if (photoBase64) done++;
     done++; // q7 ไม่บังคับ
     var pct = Math.round(done/total*100);
     document.getElementById('prog').style.width = pct + '%';
@@ -264,9 +238,7 @@
       q6_sustainability: getChips('q6').join(','),
       q7_support: document.getElementById('q7_support').value.trim(),
       q8_application: document.getElementById('q8_application').value.trim(),
-      q9_confidence: starVal,
-      passportPhotoBase64: photoBase64,
-      photoMimeType: photoMime
+      q9_confidence: starVal
     };
     var btn = document.getElementById('submitBtn');
     btn.disabled = true; btn.textContent = 'กำลังส่ง...';
@@ -280,6 +252,7 @@
   function errMsg(reason){
     var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ท่านส่งบันทึกแล้ว',
       NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', MISSING_FIELD:'กรุณากรอกข้อมูลให้ครบ',
+      MISSING_PHOTO:'กรุณาแนบรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ',
       UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
     return m[reason] || 'เกิดข้อผิดพลาด';
   }
