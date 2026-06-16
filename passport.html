@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning City Fest 10 — อัปโหลดรูป Passport</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
+         background: #f5f6f8; color: #1a1a1a; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: #777; margin: 0 0 8px; line-height: 1.5; }
+  .upload { border: 2px dashed #ccc; border-radius: 10px; padding: 28px 20px; text-align: center;
+            cursor: pointer; display: block; }
+  .upload.has { border-color: #1DB447; background: #f0f9f4; }
+  #preview { max-width: 100%; border-radius: 8px; margin-top: 12px; display: none; }
+  button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
+           border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #1DB447; color: #fff; }
+  .btn-primary:disabled { opacity: .5; }
+  .btn-secondary { background: #fff; color: #555; border: 1px solid #ccc; margin-top: 8px; }
+  #loading, #status { text-align: center; padding: 40px 20px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #1DB447;
+             border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+  #debugLine { font-size: 11px; color: #999; margin-top: 8px; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>กำลังโหลด...</p>
+  <p id="debugLine"></p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="card">
+    <h1>อัปโหลดรูป EduVenture Passport</h1>
+    <p class="sub">ถ่ายรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ เพื่อเป็นหลักฐานรับเกียรติบัตร<br>
+    เจ้าหน้าที่จะตรวจรูปนี้ตอนอนุมัติ</p>
+
+    <label class="upload" id="uploadZone">
+      <input type="file" id="photo" accept="image/*" style="display:none" onchange="onPhoto(event)">
+      <div id="uploadText">📷 แตะเพื่อถ่ายหรือเลือกรูปสมุด</div>
+    </label>
+    <img id="preview" alt="preview">
+  </div>
+
+  <button class="btn-primary" id="submitBtn" onclick="submitPhoto()" disabled>ส่งรูปหลักฐาน</button>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  // ═══════════════ ตั้งค่า ═══════════════
+  var LIFF_ID = 'PUT_NEW_PASSPORT_LIFF_ID';            // LIFF: passport (สร้างใหม่)
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbylLfGTMtcmRWls8zpLJ9MnxiFSU9Cna6KhfViZT1K51kuFWouzJUETtXJ05V4DCnCw/exec';
+  // ════════════════════════════════════════
+
+  var lineUserId = '';
+  var photoBase64 = '';
+  var photoMime = '';
+
+  function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
+  function show(id){ ['loading','app','status'].forEach(function(x){
+    document.getElementById(x).classList.toggle('hidden', x!==id); }); }
+
+  async function api(action, payload){
+    var idToken = '';
+    try { idToken = liff.getIDToken() || ''; } catch(e){}
+    var res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ apiAction: action, payload: payload || {}, idToken: idToken })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function init(){
+    try {
+      dbg('1) liff.init...');
+      await liff.init({ liffId: LIFF_ID });
+      dbg('2) init OK');
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      var profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      show('app');
+    } catch (e) {
+      dbg('❌ ' + e.message);
+      showError('เชื่อมต่อไม่ได้: ' + e.message);
+    }
+  }
+
+  function onPhoto(ev){
+    var file = ev.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      photoBase64 = e.target.result;
+      photoMime = file.type;
+      document.getElementById('uploadZone').classList.add('has');
+      document.getElementById('uploadText').textContent = '✅ ' + file.name + ' (แตะเพื่อเปลี่ยนรูป)';
+      var img = document.getElementById('preview');
+      img.src = photoBase64; img.style.display = 'block';
+      document.getElementById('submitBtn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitPhoto(){
+    if (!photoBase64) { alert('กรุณาเลือกรูปก่อน'); return; }
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'กำลังอัปโหลด...';
+    try {
+      var res = await api('savePassportPhoto', {
+        passportPhotoBase64: photoBase64,
+        photoMimeType: photoMime
+      });
+      if (res.ok) showSuccess('อัปโหลดรูป Passport สำเร็จ\nอย่าลืมกรอกบันทึกการเรียนรู้ให้ครบ');
+      else showError(errMsg(res.reason));
+    } catch (e) { showError(e.message); }
+  }
+
+  function errMsg(reason){
+    var m = { NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', NOT_FOUND:'ไม่พบข้อมูล',
+      MISSING_PHOTO:'กรุณาเลือกรูปก่อน',
+      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
+    return m[reason] || 'เกิดข้อผิดพลาด';
+  }
+  function showSuccess(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
+      '<button class="btn-primary" onclick="closeLiff()">ปิดหน้านี้</button>';
+    show('status');
+  }
+  function showError(msg){
+    document.getElementById('status').innerHTML =
+      '<div style="font-size:40px">⚠️</div><p>'+msg+'</p>' +
+      '<button class="btn-primary" onclick="show(\'app\')">ลองใหม่</button>';
+    show('status');
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = false; btn.textContent = 'ส่งรูปหลักฐาน';
+  }
+  function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
+
+  init();
+</script>
+</body>
+</html>
