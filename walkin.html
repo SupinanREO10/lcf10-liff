@@ -54,13 +54,15 @@
     <input type="text" id="lastName" placeholder="นามสกุล">
 
     <label>ตำแหน่ง / บทบาท</label>
-    <select id="position"></select>
+    <select id="position" onchange="onOther('position')"></select>
+    <input type="text" id="positionOther" class="hidden" placeholder="ระบุตำแหน่ง / บทบาท" style="margin-top:8px">
 
     <label>หน่วยงาน <span class="req">*</span></label>
     <input type="text" id="organization" placeholder="ชื่อหน่วยงาน">
 
     <label>จังหวัด <span class="req">*</span></label>
-    <select id="province"></select>
+    <select id="province" onchange="onOther('province')"></select>
+    <input type="text" id="provinceOther" class="hidden" placeholder="ระบุจังหวัด" style="margin-top:8px">
 
     <label>เบอร์โทรศัพท์ <span class="req">*</span></label>
     <input type="tel" id="phone" placeholder="08XXXXXXXX" maxlength="10">
@@ -131,6 +133,17 @@
       provs.map(function(x){ return '<option>'+x+'</option>'; }).join('');
   }
 
+  function onOther(selId){
+    var other = document.getElementById(selId + 'Other');
+    if (document.getElementById(selId).value === 'อื่นๆ') other.classList.remove('hidden');
+    else { other.classList.add('hidden'); other.value=''; }
+  }
+  function resolveVal(selId){
+    var v = document.getElementById(selId).value;
+    if (v === 'อื่นๆ') { var t = document.getElementById(selId+'Other').value.trim(); return t || 'อื่นๆ'; }
+    return v;
+  }
+
   function validate(){
     var ok = true;
     var phone = document.getElementById('phone').value.replace(/[-\s]/g,'');
@@ -154,9 +167,9 @@
       prefix: document.getElementById('prefix').value,
       firstName: document.getElementById('firstName').value.trim(),
       lastName: document.getElementById('lastName').value.trim(),
-      position: document.getElementById('position').value,
+      position: resolveVal('position'),
       organization: document.getElementById('organization').value.trim(),
-      province: document.getElementById('province').value,
+      province: resolveVal('province'),
       phone: document.getElementById('phone').value.replace(/[-\s]/g,''),
       email: document.getElementById('email').value.trim()
     };
