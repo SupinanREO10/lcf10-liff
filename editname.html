@@ -60,6 +60,14 @@
     <label>นามสกุล <span class="req">*</span></label>
     <input type="text" id="lastName" oninput="updatePreview()" placeholder="นามสกุล">
 
+    <label>ตำแหน่ง / บทบาท</label>
+    <select id="position" onchange="onOther('position')"></select>
+    <input type="text" id="positionOther" class="hidden" placeholder="ระบุตำแหน่ง / บทบาท" style="margin-top:8px">
+
+    <label>จังหวัด <span class="req">*</span></label>
+    <select id="province" onchange="onOther('province')"></select>
+    <input type="text" id="provinceOther" class="hidden" placeholder="ระบุจังหวัด" style="margin-top:8px">
+
     <div class="preview">
       <p class="preview-label">ชื่อบนเกียรติบัตร</p>
       <p class="preview-name" id="previewName">—</p>
@@ -144,7 +152,39 @@
     }).join('');
     document.getElementById('firstName').value = p.firstName || '';
     document.getElementById('lastName').value = p.lastName || '';
+
+    var roles = await api('getRoles');
+    var provs = await api('getProvinces');
+    fillSelect('position', roles, p.position || '', 'positionOther', '— เลือก —');
+    fillSelect('province', provs, p.province || '', 'provinceOther', '— เลือกจังหวัด —');
+
     updatePreview();
+  }
+
+  // เติม select + จัดการค่าเดิม: ถ้าค่าเดิมไม่อยู่ในลิสต์ → เลือก "อื่นๆ" แล้วโชว์ช่องระบุ
+  function fillSelect(selId, list, current, otherId, placeholder){
+    var inList = current && list.indexOf(current) > -1;
+    var pick = inList ? current : (current ? 'อื่นๆ' : '');
+    document.getElementById(selId).innerHTML =
+      '<option value="">'+placeholder+'</option>' +
+      list.map(function(x){ return '<option value="'+x+'"'+(x===pick?' selected':'')+'>'+x+'</option>'; }).join('');
+    var other = document.getElementById(otherId);
+    if (!inList && current) { other.value = current; other.classList.remove('hidden'); }
+    else { other.classList.add('hidden'); }
+  }
+
+  // โชว์/ซ่อนช่อง "ระบุ" เมื่อเลือก/ไม่เลือก "อื่นๆ"
+  function onOther(selId){
+    var other = document.getElementById(selId + 'Other');
+    if (document.getElementById(selId).value === 'อื่นๆ') other.classList.remove('hidden');
+    else { other.classList.add('hidden'); other.value=''; }
+  }
+
+  // ค่าจริงที่จะบันทึก: ถ้าเลือก "อื่นๆ" ใช้ข้อความที่พิมพ์ (ถ้าว่างใช้ "อื่นๆ")
+  function resolveVal(selId){
+    var v = document.getElementById(selId).value;
+    if (v === 'อื่นๆ') { var t = document.getElementById(selId+'Other').value.trim(); return t || 'อื่นๆ'; }
+    return v;
   }
 
   function updatePreview(){
@@ -153,23 +193,27 @@
     var ln = document.getElementById('lastName').value.trim();
     document.getElementById('previewName').textContent = (pf+' '+fn+' '+ln).trim() || '—';
     if (participant) document.getElementById('previewSub').textContent =
-      (participant.position||'') + ' · ' + (participant.organization||'');
+      (resolveVal('position')||'') + ' · ' + (participant.organization||'');
     document.getElementById('saveBtn').disabled = !(fn && ln);
   }
 
   async function save(){
+    var province = resolveVal('province');
+    if (!province) { alert('กรุณาเลือกจังหวัด'); return; }
     var payload = {
       participantId: PID,
       prefix: document.getElementById('prefix').value,
       firstName: document.getElementById('firstName').value.trim(),
       lastName: document.getElementById('lastName').value.trim(),
+      position: resolveVal('position'),
+      province: province,
       lineUserId: lineUserId
     };
     var btn = document.getElementById('saveBtn');
     btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
     try {
       var res = await api('saveNameEdit', payload);
-      if (res.ok) showSuccess('บันทึกชื่อเรียบร้อย: ' + res.fullName + '\nกรุณากลับไปกด "ยืนยัน" ในแชต');
+      if (res.ok) showSuccess('บันทึกข้อมูลเรียบร้อย: ' + res.fullName + '\nกรุณากลับไปกด "ยืนยัน" ในแชต');
       else showError(errMsg(res.reason));
     } catch (e) { showError(e.message); }
     btn.disabled = false; btn.textContent = 'บันทึกและดำเนินการต่อ';
