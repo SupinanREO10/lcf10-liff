@@ -42,6 +42,10 @@
     <h1>อัปโหลดรูป EduVenture Passport</h1>
     <p class="sub">ถ่ายรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ เพื่อเป็นหลักฐานรับเกียรติบัตร<br>
     เจ้าหน้าที่จะตรวจรูปนี้ตอนอนุมัติ</p>
+    <div style="background:#FFF6E6;border:1px solid #F0D9A8;color:#9A6B12;border-radius:10px;
+                padding:10px 12px;font-size:13px;line-height:1.6;margin-bottom:14px">
+      ⚠️ อัปโหลดรูปได้สูงสุด <b>3 ครั้ง</b> กรุณาตรวจให้รูปชัดและเห็นสติกเกอร์ครบก่อนส่ง
+    </div>
 
     <label class="upload" id="uploadZone">
       <input type="file" id="photo" accept="image/*" style="display:none" onchange="onPhoto(event)">
@@ -122,14 +126,21 @@
         passportPhotoBase64: photoBase64,
         photoMimeType: photoMime
       });
-      if (res.ok) showSuccess('อัปโหลดรูป Passport สำเร็จ\nอย่าลืมกรอกบันทึกการเรียนรู้ให้ครบ');
+      if (res.ok) {
+        var extra = (res.remaining != null && res.remaining >= 0)
+          ? ('\nอัปโหลดแล้ว ' + res.count + '/' + res.limit + ' ครั้ง (เหลืออีก ' + res.remaining + ' ครั้ง)')
+          : '';
+        showSuccess('อัปโหลดรูป Passport สำเร็จ\nอย่าลืมกรอกบันทึกการเรียนรู้ให้ครบ' + extra);
+      }
+      else if (res.reason === 'UPLOAD_LIMIT')
+        showError('อัปโหลดครบ ' + (res.limit || 3) + ' ครั้งแล้ว ไม่สามารถอัปโหลดเพิ่มได้\nกรุณาติดต่อเจ้าหน้าที่หากต้องแก้ไข');
       else showError(errMsg(res.reason));
     } catch (e) { showError(e.message); }
   }
 
   function errMsg(reason){
     var m = { NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', NOT_FOUND:'ไม่พบข้อมูล',
-      MISSING_PHOTO:'กรุณาเลือกรูปก่อน',
+      MISSING_PHOTO:'กรุณาเลือกรูปก่อน', UPLOAD_LIMIT:'อัปโหลดครบจำนวนครั้งที่กำหนดแล้ว',
       UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
     return m[reason] || 'เกิดข้อผิดพลาด';
   }
