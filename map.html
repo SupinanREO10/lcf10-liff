@@ -386,22 +386,16 @@
 
 <!-- ── 3D VIEW ── -->
 <div class="view" id="view3d">
-  <div class="controls3d">
-    <span class="ctrl-lbl" id="img3d-hint" style="color:#BA7517;display:none;">⚠ วางไฟล์ <code>map-3d.jpeg</code> ใน folder นี้เพื่อแสดงภาพจริง</span>
-    <span style="flex:1"></span>
-    <span class="ctrl-lbl" id="zoom3d-lbl">ซูม</span>
-    <input type="range" min="80" max="180" value="100" oninput="zoomImg(this.value)" id="zSlider" style="width:90px;">
-    <span class="ctrl-lbl" id="zVal">100%</span>
+
+  <!-- ภาพ 3D จริง (วางไฟล์ map-3d.jpeg ไว้ใน folder เดียวกัน) -->
+  <div style="width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #d3d1c7;box-shadow:0 2px 16px rgba(0,0,0,0.10);">
+    <img src="map-3d.jpg" alt="แผนผังสถานที่ LCF10 — มุมมอง 3D"
+         style="width:100%;display:block;"
+         onerror="this.parentElement.style.display='none';document.getElementById('svg3d-wrap').style.display='block'"/>
   </div>
 
-  <!-- Real photo 3D -->
-  <div id="img3d-wrap" style="width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #d3d1c7;box-shadow:0 2px 16px rgba(0,0,0,0.10);background:#e8e6df;display:none;">
-    <img id="img3d" alt="แผนผัง 3D"
-         style="width:100%;display:block;transition:transform 0.3s ease;transform-origin:center top;"/>
-  </div>
-
-  <!-- Fallback SVG 3D (shown when image missing) -->
-  <div class="scene3d" id="svg3d-wrap">
+  <!-- SVG fallback — แสดงเฉพาะเมื่อโหลดภาพไม่ได้ -->
+  <div class="scene3d" id="svg3d-wrap" style="display:none;">
     <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;justify-content:flex-end;">
       <span class="ctrl-lbl">มุมมอง</span>
       <input type="range" min="25" max="70" value="52" oninput="updateAngle3d(this.value)" id="aSlider" style="width:90px;">
@@ -592,36 +586,6 @@
     svg2.style.transformOrigin = 'top center';
   }
 
-  function zoomImg(v) {
-    document.getElementById('img3d').style.transform = 'scale(' + (v/100) + ')';
-    document.getElementById('img3d').style.transformOrigin = 'top center';
-    document.getElementById('zVal').textContent = v + '%';
-  }
-
-  window.addEventListener('load', function() {
-    var img = new Image();
-    img.onload = function() {
-      document.getElementById('img3d').src = img.src;
-      document.getElementById('img3d-wrap').style.display = 'block';
-      document.getElementById('svg3d-wrap').style.display = 'none';
-      document.getElementById('img3d-hint').style.display = 'none';
-      document.getElementById('zoom3d-lbl').style.display = '';
-      document.getElementById('zSlider').style.display = '';
-      document.getElementById('zVal').style.display = '';
-    };
-    img.onerror = function() {
-      document.getElementById('img3d-hint').style.display = '';
-      document.getElementById('svg3d-wrap').style.display = 'block';
-      document.getElementById('zoom3d-lbl').style.display = 'none';
-      document.getElementById('zSlider').style.display = 'none';
-      document.getElementById('zVal').style.display = 'none';
-    };
-    img.src = 'map-3d.jpeg';
-    /* hide zoom controls until image confirmed */
-    document.getElementById('zoom3d-lbl').style.display = 'none';
-    document.getElementById('zSlider').style.display = 'none';
-    document.getElementById('zVal').style.display = 'none';
-  });
 
   function resetZoom() {
     scale2d = 1;
