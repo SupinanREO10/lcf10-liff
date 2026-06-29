@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCF10 — คู่มือผู้เข้าร่วมงาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#071A2B; --ink2:#0B2A42; --panel:#102F49;
+  --teal:#18B4D6; --mint:#1ED7A6; --amber:#F7B14B; --sky:#7FE3F5; --gold:#FFD36B;
+  --text:#EAF5FA; --muted:#9FBACD; --line:rgba(255,255,255,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Sarabun',system-ui,sans-serif;color:var(--text);background:var(--ink);line-height:1.6;overflow-x:hidden}
+.en{font-family:'Space Grotesk','Sarabun',sans-serif}
+
+#prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:99;background:linear-gradient(90deg,var(--mint),var(--teal),var(--sky))}
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;background:
+  radial-gradient(1200px 760px at 82% -8%, rgba(24,180,214,.22), transparent 60%),
+  radial-gradient(900px 620px at 2% 12%, rgba(30,215,166,.16), transparent 56%),
+  radial-gradient(1000px 760px at 60% 115%, rgba(247,177,75,.10), transparent 60%),var(--ink)}
+.aurora i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+.aurora .b1{width:55vw;height:55vw;background:radial-gradient(circle,#18B4D6,transparent 65%);top:-14%;left:-10%;animation:fl 20s ease-in-out infinite}
+.aurora .b2{width:50vw;height:50vw;background:radial-gradient(circle,#1ED7A6,transparent 65%);bottom:-18%;right:-12%;animation:fl 24s ease-in-out infinite -10s}
+@keyframes fl{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(7%,5%) scale(1.08)}}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 26px}
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);background:rgba(7,26,43,.66);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:18px;height:66px;max-width:1080px;margin:0 auto;padding:0 26px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800}
+.brand img{height:36px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))}
+.brand b{font-size:17px}
+.brand span{color:var(--mint);font-size:11px;font-weight:600;letter-spacing:2px;display:block;margin-top:-3px}
+.nav-links{margin-left:auto;display:flex;gap:6px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:11px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,.07)}
+.nav-links a.cur{color:var(--text);background:rgba(24,180,214,.18)}
+@media(max-width:680px){.nav-links a.hideS{display:none}}
+
+.hero{padding:60px 0 30px}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
+.kick{display:inline-flex;align-items:center;gap:9px;font-size:12px;letter-spacing:3px;font-weight:600;color:var(--mint);
+  border:1px solid rgba(30,215,166,.35);background:rgba(30,215,166,.08);padding:8px 16px;border-radius:40px;text-transform:uppercase}
+.kick .dot{width:7px;height:7px;border-radius:50%;background:var(--mint);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,215,166,.6)}70%{box-shadow:0 0 0 11px rgba(30,215,166,0)}100%{box-shadow:0 0 0 0 rgba(30,215,166,0)}}
+.hero h1{font-size:clamp(34px,5.6vw,60px);font-weight:800;line-height:1.05;margin:20px 0 0;letter-spacing:-1px}
+.hero h1 .grad{background:linear-gradient(100deg,#1ED7A6,#18B4D6 52%,#7FE3F5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:520px;margin:18px 0 0}
+.hero-stage{position:relative;display:grid;place-items:center;min-height:260px}
+.hero-stage .ring{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(30,215,166,.18),transparent 62%);animation:breathe 6s ease-in-out infinite}
+.hero-stage .ring2{position:absolute;width:200px;height:200px;border-radius:50%;border:1px dashed rgba(127,227,245,.30);animation:spin 26s linear infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.12);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero-mascot{position:relative;z-index:2;width:clamp(180px,26vw,250px);filter:drop-shadow(0 22px 28px rgba(0,0,0,.45));animation:hover-bob 4.2s ease-in-out infinite;transform-origin:bottom center}
+@keyframes hover-bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1deg)}}
+
+section{padding:30px 0}
+.sec-head{max-width:680px;margin-bottom:26px}
+.sec-tag{font-size:12px;letter-spacing:3px;font-weight:700;color:var(--teal);text-transform:uppercase}
+.sec-head h2{font-size:clamp(24px,3.6vw,34px);font-weight:800;margin:10px 0 12px;letter-spacing:-.4px}
+.sec-head p{color:var(--muted);font-size:16px}
+
+/* video */
+.video-card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid var(--line);border-radius:20px;padding:14px;overflow:hidden}
+.ratio{position:relative;width:100%;padding-top:56.25%;border-radius:13px;overflow:hidden;background:#06202F}
+.ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:linear-gradient(135deg,#0A2A41,#0E3B5A);text-align:center;padding:24px}
+.vid-ph .play{width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,#1ED7A6,#18B4D6);display:grid;place-items:center;
+  box-shadow:0 12px 30px -8px rgba(24,180,214,.6);animation:bob2 2.6s ease-in-out infinite}
+@keyframes bob2{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.vid-ph .play svg{width:30px;height:30px;margin-left:4px}
+.vid-ph b{font-size:16px}
+.vid-ph small{font-size:12.5px;color:var(--muted);max-width:420px}
+.vid-cap{font-size:12.5px;color:var(--muted);text-align:center;margin-top:11px}
+
+/* timeline steps */
+.timeline{position:relative;margin-top:6px}
+.timeline:before{content:"";position:absolute;left:27px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#1ED7A6,#18B4D6,#7FE3F5)}
+@media(max-width:560px){.timeline:before{left:21px}}
+.tstep{position:relative;display:grid;grid-template-columns:56px 1fr;gap:18px;padding:0 0 22px}
+@media(max-width:560px){.tstep{grid-template-columns:44px 1fr;gap:12px}}
+.tstep .dot{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;
+  font-weight:700;font-size:22px;color:#04212F;z-index:2;box-shadow:0 8px 20px -8px rgba(0,0,0,.6)}
+@media(max-width:560px){.tstep .dot{width:44px;height:44px;font-size:18px;border-radius:13px}}
+.tstep .body{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid var(--line);
+  border-radius:16px;padding:18px 20px;transition:.28s}
+.tstep .body:hover{transform:translateY(-3px);border-color:rgba(24,180,214,.5)}
+.tstep h3{font-size:18px;font-weight:700;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.tstep .tagdo{font-size:11px;font-weight:700;color:#04212F;background:var(--mint);padding:2px 9px;border-radius:20px}
+.tstep p{color:var(--muted);font-size:14.5px;margin-top:5px}
+.tstep .hint{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:12.5px;color:var(--sky);
+  background:rgba(127,227,245,.08);border:1px solid rgba(127,227,245,.22);padding:6px 11px;border-radius:10px}
+
+/* faq */
+.faq{display:grid;gap:12px;margin-top:4px}
+.q{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:0 18px;overflow:hidden}
+.q summary{list-style:none;cursor:pointer;padding:15px 0;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.q summary::-webkit-details-marker{display:none}
+.q summary .pl{color:var(--teal);font-size:20px;transition:.2s}
+.q[open] summary .pl{transform:rotate(45deg)}
+.q p{color:var(--muted);font-size:14px;padding:0 0 16px}
+
+.cta{text-align:center;background:linear-gradient(120deg,#0A2A41,#0E3B5A);border:1px solid var(--line);border-radius:24px;padding:46px 26px;margin-top:8px}
+.cta h2{font-size:clamp(24px,3.4vw,34px);font-weight:800;margin-bottom:12px}
+.cta p{color:var(--muted);max-width:520px;margin:0 auto 22px;font-size:15.5px}
+.cta a.bigbtn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#1ED7A6,#18B4D6);color:#04212F;
+  font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:14px;transition:.2s}
+.cta a.bigbtn:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(24,180,214,.6)}
+
+footer{padding:32px 0 120px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:26px}
+footer a{color:var(--sky)}
+
+.reveal{opacity:0;transform:translateY(24px);transition:.7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+#buddy{position:fixed;right:22px;bottom:18px;z-index:60;width:120px;transition:opacity .4s, transform .4s;opacity:0;pointer-events:none}
+#buddy.show{opacity:1}
+#buddy .bimg{width:100%;display:block;filter:drop-shadow(0 12px 16px rgba(0,0,0,.45));animation:bbob 3.4s ease-in-out infinite;transform-origin:bottom center;will-change:transform}
+@keyframes bbob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-10px) rotate(1.5deg)}}
+#buddy.wave .bimg{animation:bwave .85s ease}
+@keyframes bwave{0%,100%{transform:rotate(-1.5deg)}25%{transform:rotate(-9deg) translateY(-6px)}60%{transform:rotate(7deg)}}
+.bubble{position:absolute;right:106%;bottom:56%;background:#fff;color:#0A2A41;font-size:12.5px;font-weight:600;padding:9px 13px;border-radius:13px;
+  border-bottom-right-radius:3px;max-width:200px;box-shadow:0 8px 22px rgba(0,0,0,.3);opacity:0;transform:translateX(10px) scale(.9);transition:.3s;transform-origin:bottom right}
+.bubble.on{opacity:1;transform:none}
+.bubble:after{content:"";position:absolute;right:-6px;bottom:8px;border:7px solid transparent;border-left-color:#fff;border-right:0}
+@media(max-width:560px){#buddy{width:90px;right:12px}}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="aurora"><i class="b1"></i><i class="b2"></i></div>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand">
+      <img src="https://supinanreo10.github.io/lcf10-liff/Logo.png" alt="LCF10" onerror="this.style.display='none'">
+      <div><b>คู่มือผู้เข้าร่วมงาน</b><span>LEARNING CITY FEST 10</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="#video" class="hideS">วิดีโอแนะนำ</a>
+      <a href="#steps" class="hideS">ขั้นตอน</a>
+      <a href="#faq" class="hideS">คำถามที่พบบ่อย</a>
+      <a href="lcf10_workflow.html">สำหรับทีมงาน →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <span class="kick"><span class="dot"></span>For Participants</span>
+      <h1>มาร่วมสนุกกับ<br><span class="grad">LCF10 ไปด้วยกัน!</span></h1>
+      <p class="lead">น้องนาคกี้จะพาคุณใช้งานระบบทีละขั้น — ตั้งแต่ทักไลน์ ยืนยันตัวตน เก็บสแตมป์ ไปจนรับเกียรติบัตร ง่ายมากแค่ทำตามนี้เลย</p>
+    </div>
+    <div class="hero-stage">
+      <div class="ring"></div><div class="ring2"></div>
+      <img class="hero-mascot" src="https://supinanreo10.github.io/lcf10-liff/nakky.png" alt="น้องนาคกี้" onerror="this.closest('.hero-stage').style.display='none'">
+    </div>
+  </div>
+</header>
+
+<section id="video" class="wrap reveal">
+  <div class="sec-head"><div class="sec-tag">Watch First</div><h2>วิดีโอแนะนำการใช้งาน</h2>
+    <p>ดูคลิปสั้นๆ ก่อนเริ่มงาน จะเข้าใจภาพรวมการใช้งานทั้งหมดภายในไม่กี่นาที</p></div>
+  <div class="video-card">
+    <div class="ratio" id="vidbox">
+      <div class="vid-ph" id="vidph">
+        <div class="play"><svg viewBox="0 0 24 24" fill="#04212F"><path d="M8 5v14l11-7z"/></svg></div>
+        <b>คลิปแนะนำการใช้งาน LCF10</b>
+        <small>ช่องนี้พร้อมฝังคลิปจาก Google Drive — แทนค่า <b style="color:#7FE3F5">DRIVE_FILE_ID</b> ในไฟล์ด้วยไอดีไฟล์คลิปของคุณ แล้วคลิปจะเล่นตรงนี้</small>
+      </div>
+    </div>
+    <div class="vid-cap">หมายเหตุ: ตั้งการแชร์ไฟล์ใน Drive เป็น “ทุกคนที่มีลิงก์ดูได้” คลิปจึงจะแสดงให้ผู้เข้าร่วมเห็น</div>
+  </div>
+</section>
+
+<section id="steps" class="wrap reveal">
+  <div class="sec-head"><div class="sec-tag">Step by Step</div><h2>ทำตาม 6 ขั้นตอนนี้</h2>
+    <p>ทุกขั้นทำผ่านมือถือได้เลย ระบบจะบันทึกความคืบหน้าของคุณให้อัตโนมัติ</p></div>
+  <div class="timeline">
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#1ED7A6,#11A883)">1</div>
+      <div class="body"><h3>เพิ่มเพื่อน LINE OA <span class="tagdo">เริ่มที่นี่</span></h3>
+        <p>สแกน QR ของงานเพื่อเพิ่มเพื่อน LINE Official Account ของ LCF10 — ทุกอย่างทำผ่านแชตนี้ที่เดียว</p>
+        <span class="hint">💡 เปิดเมนูด้านล่างแชต (Rich Menu) เพื่อเข้าทุกฟังก์ชัน</span></div></div>
+
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#18B4D6,#1290B0)">2</div>
+      <div class="body"><h3>ยืนยันตัวตน / ลงทะเบียนหน้างาน</h3>
+        <p>กดยืนยันตัวตนแล้วกรอกข้อมูลสั้นๆ ถ้าไม่ได้ลงทะเบียนล่วงหน้าก็เลือก “Walk-in” กรอกหน้างานได้เลย</p>
+        <span class="hint">💡 ใช้ชื่อ-นามสกุลจริง เพื่อให้ออกเกียรติบัตรได้ถูกต้อง</span></div></div>
+
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#18B4D6,#1290B0)">3</div>
+      <div class="body"><h3>เก็บสแตมป์ EduVenture Passport</h3>
+        <p>เดินเที่ยวครบ 6 บูธ รับสแตมป์สะสมในพาสปอร์ตของคุณ ระบบจะนับให้อัตโนมัติเมื่อครบ</p>
+        <span class="hint">🎯 เป้าหมาย: ครบ 6 บูธ</span></div></div>
+
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#F7B14B,#E0902F)">4</div>
+      <div class="body"><h3>ถ่ายรูปพาสปอร์ตส่งในไลน์</h3>
+        <p>เมื่อเก็บครบแล้ว ถ่ายรูปสมุดพาสปอร์ตแล้วส่งเข้าแชต LINE เพื่อเป็นหลักฐาน</p>
+        <span class="hint">💡 ถ้าส่งรูปไม่ผ่าน แจ้งเจ้าหน้าที่ให้ “ปลดล็อก” แล้วส่งใหม่ได้</span></div></div>
+
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#F7B14B,#E0902F)">5</div>
+      <div class="body"><h3>ทำบันทึกการเรียนรู้ + โหวต</h3>
+        <p>กรอกแบบบันทึกการเรียนรู้ (Reflection) สั้นๆ และร่วมโหวต Popular Vote ให้ผลงานที่ชอบ</p>
+        <span class="hint">⏰ มีแจ้งเตือนให้ทางไลน์ ไม่ต้องกลัวลืม</span></div></div>
+
+    <div class="tstep"><div class="dot" style="background:linear-gradient(135deg,#1ED7A6,#11A883)">6</div>
+      <div class="body"><h3>รับเกียรติบัตร 🏆</h3>
+        <p>เมื่อครบเงื่อนไขและเจ้าหน้าที่ตรวจสอบแล้ว เกียรติบัตรจะส่งเข้าไลน์ของคุณอัตโนมัติ พร้อมแบบสอบถามสั้นๆ ปิดท้าย</p>
+        <span class="hint">✨ ดาวน์โหลดเก็บไว้ได้เลย ส่งทางไลน์เท่านั้น</span></div></div>
+  </div>
+</section>
+
+<section id="faq" class="wrap reveal">
+  <div class="sec-head"><div class="sec-tag">FAQ</div><h2>คำถามที่พบบ่อย</h2></div>
+  <div class="faq">
+    <details class="q"><summary>ไม่ได้ลงทะเบียนล่วงหน้า เข้าร่วมได้ไหม? <span class="pl">+</span></summary>
+      <p>ได้ครับ เลือก “Walk-in” ในเมนู แล้วกรอกข้อมูลหน้างานได้เลย ระบบจะสร้างข้อมูลให้คุณทันที</p></details>
+    <details class="q"><summary>เก็บสแตมป์ไม่ครบ 6 บูธ จะได้เกียรติบัตรไหม? <span class="pl">+</span></summary>
+      <p>เกียรติบัตรจะออกเมื่อครบเงื่อนไข (เก็บพาสปอร์ต + ส่งรูป + ทำบันทึกการเรียนรู้) แนะนำให้เก็บให้ครบก่อนปิดงาน</p></details>
+    <details class="q"><summary>ส่งรูปพาสปอร์ตผิด/อยากส่งใหม่ ทำยังไง? <span class="pl">+</span></summary>
+      <p>แจ้งเจ้าหน้าที่ให้กด “ปลดล็อกการอัพโหลด” ให้ แล้วคุณจะส่งรูปใหม่ได้อีกครั้ง</p></details>
+    <details class="q"><summary>ได้เกียรติบัตรทางไหน? <span class="pl">+</span></summary>
+      <p>ส่งเข้าแชต LINE ของคุณโดยตรง (ไม่ส่งทางอีเมล) เปิดดูและบันทึกเก็บไว้ได้เลย</p></details>
+  </div>
+</section>
+
+<section class="wrap reveal">
+  <div class="cta">
+    <h2>พร้อมแล้วใช่ไหม?</h2>
+    <p>เพิ่มเพื่อน LINE OA ของ LCF10 แล้วเริ่มเก็บสแตมป์กับน้องนาคกี้ได้เลย!</p>
+    <a class="bigbtn" href="#video">▶ ดูวิดีโอแนะนำอีกครั้ง</a>
+  </div>
+</section>
+
+<footer>
+  Learning City Fest 10 · คู่มือสำหรับผู้เข้าร่วมงาน<br>
+  ดูภาพรวมระบบสำหรับทีมงานได้ที่ <a href="lcf10_workflow.html">หน้า Automation Workflow</a>
+</footer>
+
+<div id="buddy">
+  <div class="bubble" id="bubble">สวัสดีครับ!</div>
+  <img class="bimg" src="https://supinanreo10.github.io/lcf10-liff/nakky.png" alt="น้องนาคกี้" onerror="document.getElementById('buddy').remove()">
+</div>
+
+<script>
+/* ====== ฝังคลิป Google Drive ======
+   วิธีใช้: คัดลอกไอดีไฟล์จากลิงก์แชร์ Drive
+   เช่น https://drive.google.com/file/d/1AbcXyz123/view  ->  ไอดีคือ 1AbcXyz123
+   แล้วแทนค่าในบรรทัดล่างนี้ */
+const DRIVE_FILE_ID = "1nNVtJKpbtNyVAhOZK7vQgdYlDX7bYXtq";
+
+(function(){
+  if(DRIVE_FILE_ID && DRIVE_FILE_ID!=="DRIVE_FILE_ID"){
+    const box=document.getElementById('vidbox');
+    box.innerHTML='<iframe src="https://drive.google.com/file/d/'+DRIVE_FILE_ID+'/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+  }
+})();
+
+const buddy=document.getElementById('buddy'),bubble=document.getElementById('bubble'),prog=document.getElementById('prog');
+let bt;
+function buddySay(t){bubble.textContent=t;bubble.classList.add('on');buddy.classList.remove('wave');void buddy.offsetWidth;buddy.classList.add('wave');clearTimeout(bt);bt=setTimeout(()=>bubble.classList.remove('on'),3200);}
+
+const lines={video:"ดูคลิปก่อนนะครับ จะเข้าใจง่ายขึ้น 🎬",steps:"ทำตาม 6 ขั้นนี้เลยครับ!",faq:"มีคำถาม? ดูตรงนี้ได้เลย"};
+let lastSec='';
+const secObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&e.target.id&&lines[e.target.id]&&lastSec!==e.target.id){lastSec=e.target.id;buddySay(lines[e.target.id]);}}),{threshold:.4});
+['video','steps','faq'].forEach(id=>{const el=document.getElementById(id);if(el)secObs.observe(el);});
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(n=>io.observe(n));
+
+setTimeout(()=>{buddy.classList.add('show');buddySay('สวัสดีครับ ผมน้องนาคกี้ มาเริ่มกันเลย!');},900);
+
+let lastY=window.scrollY,idle;
+function onScroll(){const sc=document.documentElement;
+  prog.style.width=(sc.scrollTop/(sc.scrollHeight-sc.clientHeight||1)*100)+'%';
+  const dv=Math.max(-1,Math.min(1,(window.scrollY-lastY)/40));
+  buddy.style.transform=`translateY(${-dv*8}px) rotate(${dv*5}deg)`;lastY=window.scrollY;
+  clearTimeout(idle);idle=setTimeout(()=>{buddy.style.transform='';},160);}
+window.addEventListener('scroll',onScroll,{passive:true});
+</script>
+</body>
+</html>
