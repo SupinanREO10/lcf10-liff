@@ -31,9 +31,6 @@
   .stars { display: flex; gap: 6px; }
   .star { font-size: 30px; color: #ddd; cursor: pointer; }
   .star.lit { color: #ef9f27; }
-  .upload { border: 2px dashed #ccc; border-radius: 10px; padding: 20px; text-align: center;
-            cursor: pointer; }
-  .upload.has { border-color: #1DB447; background: #f0f9f4; }
   button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
            border-radius: 10px; cursor: pointer; font-family: inherit; }
   .btn-primary { background: #d85a30; color: #fff; }
@@ -249,13 +246,22 @@
     } catch (e) { showError(e.message); }
   }
 
+  // ── v2: เพิ่ม NOT_UNLOCKED และ reason ทั้งหมดที่ backend ส่งได้ ──
   function errMsg(reason){
-    var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ท่านส่งบันทึกแล้ว',
-      NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', MISSING_FIELD:'กรุณากรอกข้อมูลให้ครบ',
-      MISSING_PHOTO:'กรุณาแนบรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ',
-      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
-    return m[reason] || 'เกิดข้อผิดพลาด';
+    var m = {
+      NOT_UNLOCKED:       'ยังไม่ได้รับการปลดล็อก กรุณาติดต่อเจ้าหน้าที่',
+      STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ กรุณาติดต่อเจ้าหน้าที่',
+      NOT_ACTIVATED:      'กรุณายืนยันตัวตนในงานก่อน',
+      NOT_FOUND:          'ไม่พบข้อมูลของท่าน กรุณาติดต่อเจ้าหน้าที่',
+      ALREADY_SUBMITTED:  'ท่านส่งบันทึกการเรียนรู้แล้ว',
+      MISSING_FIELD:      'กรุณากรอกข้อมูลให้ครบทุกข้อ',
+      SAVE_ERROR:         'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่',
+      UNAUTHORIZED:       'ยืนยันตัวตนไม่สำเร็จ กรุณาปิดแล้วเปิดใหม่',
+      INVALID_TOKEN:      'ยืนยันตัวตนไม่สำเร็จ กรุณาปิดแล้วเปิดใหม่'
+    };
+    return m[reason] || ('เกิดข้อผิดพลาด (' + reason + ')');
   }
+
   function showSuccess(msg){
     document.getElementById('status').innerHTML =
       '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
@@ -268,7 +274,7 @@
       '<button class="btn-primary" onclick="show(\'app\')">กลับไปแก้ไข</button>';
     show('status');
     var btn = document.getElementById('submitBtn');
-    btn.disabled = false; btn.textContent = 'ส่งบันทึกการเรียนรู้';
+    if (btn) { btn.disabled = false; btn.textContent = 'ส่งบันทึกการเรียนรู้'; }
   }
   function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
 
