@@ -173,10 +173,10 @@ footer a{color:var(--sky)}
       <div class="vid-ph" id="vidph">
         <div class="play"><svg viewBox="0 0 24 24" fill="#04212F"><path d="M8 5v14l11-7z"/></svg></div>
         <b>คลิปแนะนำการใช้งาน LCF10</b>
-        <small>ช่องนี้พร้อมฝังคลิปจาก Google Drive — แทนค่า <b style="color:#7FE3F5">DRIVE_FILE_ID</b> ในไฟล์ด้วยไอดีไฟล์คลิปของคุณ แล้วคลิปจะเล่นตรงนี้</small>
+        <small>ช่องนี้ฝังคลิปแนะนำการใช้งานจาก YouTube ไว้แล้ว หากไม่ขึ้น ลองรีเฟรชหน้าอีกครั้ง</small>
       </div>
     </div>
-    <div class="vid-cap">หมายเหตุ: ตั้งการแชร์ไฟล์ใน Drive เป็น “ทุกคนที่มีลิงก์ดูได้” คลิปจึงจะแสดงให้ผู้เข้าร่วมเห็น</div>
+    <div class="vid-cap">คลิปแนะนำการใช้งานระบบ LCF10 · รับชมผ่าน YouTube</div>
   </div>
 </section>
 
@@ -249,16 +249,15 @@ footer a{color:var(--sky)}
 </div>
 
 <script>
-/* ====== ฝังคลิป Google Drive ======
-   วิธีใช้: คัดลอกไอดีไฟล์จากลิงก์แชร์ Drive
-   เช่น https://drive.google.com/file/d/1AbcXyz123/view  ->  ไอดีคือ 1AbcXyz123
-   แล้วแทนค่าในบรรทัดล่างนี้ */
-const DRIVE_FILE_ID = "1nNVtJKpbtNyVAhOZK7vQgdYlDX7bYXtq";
+/* ====== ฝังคลิป YouTube ======
+   เปลี่ยนคลิปได้โดยแก้ YT_ID เป็นรหัสวิดีโอ YouTube
+   เช่น https://youtu.be/-B-VAMHMPGk  ->  รหัสคือ -B-VAMHMPGk */
+const YT_ID = "-B-VAMHMPGk";
 
 (function(){
-  if(DRIVE_FILE_ID && DRIVE_FILE_ID!=="DRIVE_FILE_ID"){
+  if(YT_ID){
     const box=document.getElementById('vidbox');
-    box.innerHTML='<iframe src="https://drive.google.com/file/d/'+DRIVE_FILE_ID+'/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+    box.innerHTML='<iframe src="https://www.youtube.com/embed/'+YT_ID+'" title="วิดีโอแนะนำการใช้งาน LCF10" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
   }
 })();
 
