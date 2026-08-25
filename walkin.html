@@ -223,8 +223,8 @@
     btn.disabled = true; btn.textContent = 'กำลังลงทะเบียน...';
     try {
       var res = await api('saveWalkIn', payload);
-      if (res.ok) showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + '\nท่านสามารถใช้งานทุกเมนูได้แล้ว');
-      else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber);
+      if (res.ok) showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + '\nระบบส่งการ์ดข้อมูลการลงทะเบียนให้ในแชท LINE แล้ว');
+      else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber + '\nระบบส่งการ์ดข้อมูลให้ในแชท LINE อีกครั้งแล้ว');
       else showError(errMsg(res.reason));
     } catch (e) { showError(e.message); }
   }
