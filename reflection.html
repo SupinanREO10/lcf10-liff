@@ -310,6 +310,17 @@
       if (!liff.isLoggedIn()) { liff.login(); return; }
       var profile = await liff.getProfile();
       lineUserId = profile.userId;
+      var state = null;
+      try {
+        state = await api('getStatus', { lineUserId: lineUserId });
+      } catch (statusError) {
+        // หากโหลดสถานะไม่ได้ ยังเปิดฟอร์มได้ โดย backend จะตรวจการส่งซ้ำอีกชั้น
+        dbg('ตรวจสถานะไม่ได้: ' + statusError.message);
+      }
+      if (state && state.ok && state.reflectionSubmitted && state.approvalStatus !== 'REJECTED') {
+        showAlreadySubmitted(state);
+        return;
+      }
       buildForm();
       show('app');
     } catch (e) {
@@ -515,17 +526,23 @@
     btn.disabled = true; btn.textContent = 'กำลังส่ง...';
     try {
       var res = await api('saveReflection', payload);
-      if (res.ok) showSuccess(res.certificateUrl
-        ? 'บันทึกการแก้ไขสำเร็จ\nเกียรติบัตรของท่านออกแล้ว กรุณาตรวจสอบใน LINE'
-        : 'ส่งแบบประเมินสำเร็จ\nเมื่อภาพ Passport ครบ สถานะจะเป็น “อยู่ระหว่างการตรวจสอบเพื่ออนุมัติเกียรติบัตร”');
+      if (res.ok) showSuccess(
+        '✅ ดำเนินการบันทึกการเรียนรู้สำเร็จแล้ว\n' +
+        'ระบบบันทึกข้อมูลของท่านเรียบร้อยแล้ว ไม่ต้องกรอกซ้ำ\n\n' +
+        (res.certificateUrl
+          ? 'เกียรติบัตรของท่านออกแล้ว กรุณาตรวจสอบใน LINE'
+          : 'เมื่อภาพ Passport ครบ ข้อมูลจะเข้าสู่การตรวจสอบเพื่ออนุมัติเกียรติบัตร')
+      );
+      else if (res.reason === 'ALREADY_SUBMITTED') showAlreadySubmitted(res);
       else showError(errMsg(res.reason));
     } catch (e) { showError(e.message); }
   }
 
   function errMsg(reason){
-    var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ท่านส่งบันทึกแล้ว',
+    var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ดำเนินการบันทึกการเรียนรู้สำเร็จแล้ว ไม่ต้องกรอกซ้ำ',
       NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', MISSING_FIELD:'กรุณากรอกข้อมูลให้ครบ',
       MISSING_PHOTO:'กรุณาแนบรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ',
+      SERVER_BUSY:'มีผู้ใช้งานจำนวนมาก กรุณาลองใหม่อีกครั้ง',
       UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
     return m[reason] || 'เกิดข้อผิดพลาด';
   }
@@ -534,6 +551,14 @@
       '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
       '<button class="btn-primary" onclick="closeLiff()">ปิดหน้านี้</button>';
     show('status');
+  }
+  function showAlreadySubmitted(state){
+    state = state || {};
+    var statusText = state.approvalStatus === 'PENDING'
+      ? '\n\n⏳ อยู่ระหว่างการตรวจสอบเพื่ออนุมัติเกียรติบัตร'
+      : '\n\nไม่ต้องกรอกหรือส่งข้อมูลซ้ำ';
+    showSuccess('ดำเนินการบันทึกการเรียนรู้สำเร็จแล้ว\n' +
+      'ระบบมีข้อมูลของท่านเรียบร้อยแล้ว' + statusText);
   }
   function showError(msg){
     document.getElementById('status').innerHTML =
