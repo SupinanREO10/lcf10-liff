@@ -515,7 +515,9 @@
     btn.disabled = true; btn.textContent = 'กำลังส่ง...';
     try {
       var res = await api('saveReflection', payload);
-      if (res.ok) showSuccess('ส่งบันทึกการเรียนรู้สำเร็จ\nเจ้าหน้าที่จะตรวจสอบและแจ้งผลผ่าน LINE');
+      if (res.ok) showSuccess(res.certificateUrl
+        ? 'บันทึกการแก้ไขสำเร็จ\nเกียรติบัตรของท่านออกแล้ว กรุณาตรวจสอบใน LINE'
+        : 'ส่งแบบประเมินสำเร็จ\nเมื่อภาพ Passport ครบ สถานะจะเป็น “อยู่ระหว่างการตรวจสอบเพื่ออนุมัติเกียรติบัตร”');
       else showError(errMsg(res.reason));
     } catch (e) { showError(e.message); }
   }
