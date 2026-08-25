@@ -133,6 +133,7 @@
   var lineUserId = '';
   var photos = { front:{data:'',mime:'image/jpeg'}, back:{data:'',mime:'image/jpeg'} };
   var isUploading = false;
+  var isEditing = false;
 
   function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
   function show(id){ ['loading','app','status'].forEach(function(x){ document.getElementById(x).classList.toggle('hidden',x!==id); }); }
@@ -194,7 +195,8 @@
     var btn=document.getElementById('submitBtn'); isUploading=true; btn.disabled=true; btn.textContent='กำลังอัปโหลดภาพ...';
     try{
       var res=await api('savePassportPhoto',{passportFrontPhotoBase64:photos.front.data,
-        passportBackPhotoBase64:photos.back.data,frontPhotoMimeType:photos.front.mime,backPhotoMimeType:photos.back.mime});
+        passportBackPhotoBase64:photos.back.data,frontPhotoMimeType:photos.front.mime,backPhotoMimeType:photos.back.mime,
+        replaceExisting:isEditing});
       if(!res.ok) throw new Error(errMsg(res.reason));
       showSaved(res);
     }catch(e){ showError(e.message); }
@@ -215,8 +217,10 @@
       : (pending
         ? 'เจ้าหน้าที่กำลังตรวจภาพ Passport และสถานะการส่งแบบประเมินความพึงพอใจ\nเมื่ออนุมัติแล้ว ระบบจะส่งเกียรติบัตรให้ทาง LINE'
         : 'ระบบได้รับภาพ Passport ด้านหน้าและด้านหลังแล้ว\nกรุณาตอบแบบประเมินความพึงพอใจให้ครบและกดส่ง เพื่อส่งข้อมูลให้เจ้าหน้าที่ตรวจสอบ');
+    var saved='';
+    if(state.passportFrontPhotoUrl&&state.passportBackPhotoUrl){saved='<div class="status-pill success">✓ บันทึกภาพ Passport ด้านหน้าและด้านหลังแล้ว</div>';}
     document.getElementById('status').innerHTML='<div class="state-icon">'+icon+'</div><h2>'+title+'</h2>'+pill+'<p>'+detail+'</p>'+
-      '<button class="primary" onclick="editImages()">แก้ไขภาพ</button><button class="secondary" onclick="closeLiff()">ปิดหน้านี้</button>';
+      saved+'<button class="primary" onclick="editImages()">แก้ไขภาพ Passport</button><button class="secondary" onclick="closeLiff()">ปิดหน้านี้</button>';
     show('status');
   }
   function showError(msg){
@@ -225,13 +229,14 @@
     show('status');
   }
   function editImages(){
+    isEditing=true;
     photos={front:{data:'',mime:'image/jpeg'},back:{data:'',mime:'image/jpeg'}};
     ['front','back'].forEach(function(side){document.getElementById(side+'Zone').classList.remove('has');document.getElementById(side+'Photo').value='';});
     updateSubmit(); show('app'); window.scrollTo({top:0,behavior:'smooth'});
   }
   function errMsg(reason){
     var m={NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน',NOT_FOUND:'ไม่พบข้อมูลผู้เข้าร่วม',INVALID_TOKEN:'ยืนยันตัวตนไม่สำเร็จ',
-      MISSING_BOTH_PHOTOS:'กรุณาเลือกภาพด้านหน้าและด้านหลังให้ครบ',UPLOAD_FAILED:'อัปโหลดภาพไม่สำเร็จ กรุณาลองใหม่'};
+      MISSING_BOTH_PHOTOS:'กรุณาเลือกภาพด้านหน้าและด้านหลังให้ครบ',ALREADY_UPLOADED:'ระบบบันทึกภาพครบแล้ว หากต้องการเปลี่ยนภาพ ให้กดปุ่ม “แก้ไขภาพ Passport”',UPLOAD_FAILED:'อัปโหลดภาพไม่สำเร็จ กรุณาลองใหม่'};
     return m[reason]||'เกิดข้อผิดพลาด กรุณาลองใหม่';
   }
   function closeLiff(){if(liff.isInClient())liff.closeWindow();else history.back();}
