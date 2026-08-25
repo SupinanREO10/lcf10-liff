@@ -204,7 +204,7 @@
   function showSaved(state){
     state=state||{};
     var approved=!!state.certificateUrl||state.approvalStatus==='APPROVED';
-    var pending=state.approvalStatus==='PENDING'||(!approved&&state.reflectionSubmitted);
+    var pending=state.approvalStatus==='PENDING'||(!approved&&state.surveyCompleted);
     var icon=approved?'🎓':(pending?'🔎':'✅');
     var title=approved?'เกียรติบัตรพร้อมแล้ว':(pending?'ส่งข้อมูลครบแล้ว':'อัปโหลดครบ 2 ภาพแล้ว');
     var pill=approved
@@ -213,8 +213,8 @@
     var detail=approved
       ? 'ตรวจสอบและดาวน์โหลดเกียรติบัตรได้จากข้อความใน LINE'
       : (pending
-        ? 'เจ้าหน้าที่กำลังตรวจภาพ Passport และคำตอบแบบประเมิน\nเมื่ออนุมัติแล้ว ระบบจะส่งเกียรติบัตรให้ทาง LINE'
-        : 'ระบบได้รับภาพ Passport ด้านหน้าและด้านหลังแล้ว\nกรุณาตอบแบบประเมินให้ครบ เพื่อส่งข้อมูลให้เจ้าหน้าที่ตรวจสอบ');
+        ? 'เจ้าหน้าที่กำลังตรวจภาพ Passport และสถานะการส่งแบบประเมินความพึงพอใจ\nเมื่ออนุมัติแล้ว ระบบจะส่งเกียรติบัตรให้ทาง LINE'
+        : 'ระบบได้รับภาพ Passport ด้านหน้าและด้านหลังแล้ว\nกรุณาตอบแบบประเมินความพึงพอใจให้ครบและกดส่ง เพื่อส่งข้อมูลให้เจ้าหน้าที่ตรวจสอบ');
     document.getElementById('status').innerHTML='<div class="state-icon">'+icon+'</div><h2>'+title+'</h2>'+pill+'<p>'+detail+'</p>'+
       '<button class="primary" onclick="editImages()">แก้ไขภาพ</button><button class="secondary" onclick="closeLiff()">ปิดหน้านี้</button>';
     show('status');

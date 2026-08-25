@@ -239,9 +239,9 @@ footer{padding:38px 0 120px;text-align:center;color:var(--muted);font-size:13px;
   <div class="sec-head"><div class="sec-tag">Automation</div><h2>งานที่ระบบทำเอง</h2>
     <p>จุดที่ช่วยลดงานเจ้าหน้าที่หน้างาน — ทำงานตามเหตุการณ์หรือตามเวลาที่ตั้งไว้ล่วงหน้า</p></div>
   <div class="auto-grid">
-    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#1ED7A6,#11A883)">❖</div><div><h3>อนุมัติ → ออกเกียรติบัตรทันที</h3><div class="when">เมื่อแอดมินกดอนุมัติ</div><p>ระบบสร้างเกียรติบัตรและส่งการ์ดแบบสอบถามต่อท้ายให้เองผ่าน LINE — กันออกซ้ำด้วย LockService</p></div></div>
-    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#F7B14B,#E0902F)">↻</div><div><h3>เตือนแบบสอบถามซ้ำ 2 รอบ</h3><div class="when">13:30 และ 15:30 ของวันงาน</div><p>ส่งเฉพาะคนที่ยังไม่กดปุ่ม โดยติดตามผ่านฟิลด์ <b style="color:#EAF5FA">surveyClicked</b> ในชีต</p></div></div>
-    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#18B4D6,#1290B0)">✓</div><div><h3>แจ้งเมื่อครบ 3 เงื่อนไข</h3><div class="when">ทันทีที่ครบ Passport + Reflection + รูป</div><p>ระบบแจ้งผู้เข้าร่วมอัตโนมัติ และกันการแจ้งซ้ำผ่าน <b style="color:#EAF5FA">audit_log</b></p></div></div>
+    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#1ED7A6,#11A883)">❖</div><div><h3>อนุมัติ → ออกเกียรติบัตรทันที</h3><div class="when">เมื่อแอดมินกดอนุมัติ</div><p>ระบบสร้างเกียรติบัตรและส่งให้ผู้เข้าร่วมผ่าน LINE — กันออกซ้ำด้วย LockService</p></div></div>
+    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#F7B14B,#E0902F)">↻</div><div><h3>เตือนแบบประเมินซ้ำ 2 รอบ</h3><div class="when">13:30 และ 15:30 ของวันงาน</div><p>ส่งเฉพาะคนที่ยังไม่ส่งคำตอบ โดยติดตามผ่านฟิลด์ <b style="color:#EAF5FA">surveyCompleted</b> ในชีต</p></div></div>
+    <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#18B4D6,#1290B0)">✓</div><div><h3>แจ้งเมื่อครบเงื่อนไข</h3><div class="when">ทันทีที่ครบภาพ Passport 2 ด้าน + แบบประเมินความพึงพอใจ</div><p>ระบบเปลี่ยนเป็นรอตรวจสอบและแจ้งผู้เข้าร่วมอัตโนมัติผ่าน LINE</p></div></div>
     <div class="acard card"><div class="ai" style="background:linear-gradient(135deg,#7FE3F5,#4FC4DE)">◷</div><div><h3>Trigger ตามเวลา</h3><div class="when">10:45 น. · 11:30 น.</div><p>เตือนโหวต Popular Vote และเตือนทำบันทึกการเรียนรู้ ตั้งล่วงหน้าด้วย Time-based Trigger</p></div></div>
   </div>
 </section>
@@ -282,10 +282,11 @@ footer{padding:38px 0 120px;text-align:center;color:var(--muted);font-size:13px;
 const J=[
  {n:"1",c:"#18B4D6",t:"ยืนยันตัวตน / Walk-in",actor:"ผู้เข้าร่วม · LINE OA Bot",d:"ผู้ร่วมงานทักแชต LINE OA แล้วกรอกฟอร์ม LIFF ระบบจับคู่กับฐานข้อมูลผู้เข้าร่วม หรือสร้างเรคคอร์ดใหม่กรณี Walk-in",meta:["ฟอร์ม: <b>LIFF (GitHub Pages)</b>","บันทึก: <b>participants</b>"]},
  {n:"2",c:"#18B4D6",t:"EduVenture Passport",actor:"ผู้เข้าร่วม · LINE OA Bot",d:"เดินเก็บสแตมป์ครบ 6 บูธ ระบบนับสถานะให้อัตโนมัติ เมื่อครบจะตั้งค่า passportReceived",meta:["เป้าหมาย: <b>6 สแตมป์</b>","สถานะ: <b>passportReceived</b>"]},
- {n:"3",c:"#F7B14B",t:"อัพโหลดรูป Passport",actor:"ผู้เข้าร่วม · LINE OA Bot",d:"ส่งรูปสมุด Passport ผ่านแชต LINE จำนวนครั้งที่อัพโหลดถูกคุมด้วย audit_log แอดมินสามารถ “ปลดล็อก” เพื่อรีเซ็ต quota",meta:["คุมโดย: <b>audit_log</b>","ฟิลด์: <b>passportPhotoUrl</b>"]},
- {n:"4",c:"#F7B14B",t:"ทำบันทึกการเรียนรู้",actor:"ผู้เข้าร่วม · LIFF Form",d:"กรอกแบบบันทึกการเรียนรู้ (Reflection) ผ่านฟอร์ม LIFF ระบบบันทึกลงชีตและใช้เป็นหนึ่งในเงื่อนไขอนุมัติ",meta:["ฟอร์ม: <b>LIFF</b>","เป็นเงื่อนไข: <b>อนุมัติ</b>"]},
- {n:"5",c:"#1ED7A6",t:"รอเจ้าหน้าที่ตรวจสอบ",actor:"ระบบ · Admin Web App",d:"เมื่อครบ PENDING + Reflection + รูป Passport ระบบจัดเข้าคิวรออนุมัติฝั่งแอดมินโดยอัตโนมัติ พร้อมแสดงรูปล่าสุด",meta:["เงื่อนไข: <b>3 จุดต้องตรงกัน</b>","แสดงที่: <b>คิวอนุมัติ</b>"]},
- {n:"6",c:"#1ED7A6",t:"รับเกียรติบัตร",actor:"ระบบ · ส่งผ่าน LINE",d:"แอดมินกดอนุมัติ ระบบออกเกียรติบัตร PDF ส่งเข้า LINE ทันที พร้อมการ์ดแบบสอบถามต่อท้าย และเริ่มติดตามการตอบ",meta:["ส่งทาง: <b>LINE เท่านั้น</b>","ต่อท้าย: <b>การ์ดแบบสอบถาม</b>"]},
+ {n:"3",c:"#F7B14B",t:"อัปโหลดภาพ Passport 2 ด้าน",actor:"ผู้เข้าร่วม · LIFF Form",d:"ส่งภาพด้านหน้าและด้านหลังให้ชัดเจน และกดแก้ไขภาพเพื่อส่งใหม่ได้ด้วยตนเอง",meta:["ฟิลด์: <b>passportFrontPhotoUrl</b>","ฟิลด์: <b>passportBackPhotoUrl</b>"]},
+ {n:"4",c:"#F7B14B",t:"ทำบันทึกการเรียนรู้",actor:"ผู้เข้าร่วม · LIFF Form",d:"กรอกบันทึกการเรียนรู้เพื่อใช้ในการถอดบทเรียน เป็นคนละส่วนกับแบบประเมินความพึงพอใจ",meta:["ฟอร์ม: <b>LIFF</b>","สถานะ: <b>reflectionSubmitted</b>"]},
+ {n:"5",c:"#F7B14B",t:"ตอบแบบประเมินความพึงพอใจ",actor:"ผู้เข้าร่วม · Google Form",d:"ตอบให้ครบและกดส่ง ระบบรับผลจาก Form submit trigger ไม่ใช้การกดเปิดลิงก์เป็นหลักฐาน",meta:["สถานะ: <b>surveyCompleted</b>","ไม่ใช่: <b>Reflection</b>"]},
+ {n:"6",c:"#1ED7A6",t:"รอเจ้าหน้าที่ตรวจสอบ",actor:"ระบบ · Admin Web App",d:"เมื่อภาพ Passport ครบ 2 ด้านและส่งแบบประเมินความพึงพอใจแล้ว ระบบจัดเข้าคิวรออนุมัติ",meta:["สถานะ: <b>PENDING</b>","แสดงที่: <b>คิวอนุมัติ</b>"]},
+ {n:"7",c:"#1ED7A6",t:"รับเกียรติบัตร",actor:"ระบบ · ส่งผ่าน LINE",d:"แอดมินตรวจสอบและกดอนุมัติ ระบบจึงออกเกียรติบัตร PDF ส่งเข้า LINE",meta:["ส่งทาง: <b>LINE</b>","อนุมัติโดย: <b>แอดมิน</b>"]},
 ];
 const stepsEl=document.getElementById('steps'),detEl=document.getElementById('detail');
 J.forEach((s,i)=>{const el=document.createElement('div');el.className='step'+(i===0?' active':'');
