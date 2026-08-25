@@ -5,44 +5,166 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Learning City Fest 10 — บันทึกการเรียนรู้</title>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
-         background: #f5f6f8; color: #1a1a1a; }
-  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 10px;
-          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  h1 { font-size: 18px; margin: 0 0 4px; }
-  .sub { font-size: 13px; color: #777; margin: 0 0 8px; }
-  .qnum { display: inline-flex; width: 22px; height: 22px; border-radius: 50%;
-          background: #e6f1fb; color: #185fa5; font-size: 12px; font-weight: 600;
-          align-items: center; justify-content: center; margin-right: 8px; }
-  .qlabel { font-size: 14px; font-weight: 500; margin: 0 0 4px; }
-  .qdesc { font-size: 11px; color: #888; margin: 0 0 10px; padding-left: 30px; }
-  .req { color: #d64; }
-  textarea { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc;
-             border-radius: 8px; font-family: inherit; resize: vertical; min-height: 70px; }
-  textarea:focus { outline: none; border-color: #d85a30; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 7px 12px; border-radius: 20px; font-size: 13px; border: 1px solid #ccc;
-          background: #fff; color: #555; cursor: pointer; user-select: none; }
-  .chip.sel { background: #e6f1fb; color: #185fa5; border-color: #85b7eb; }
-  .radio { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px;
-           cursor: pointer; margin-bottom: 4px; border: 1px solid #eee; }
-  .radio.sel { background: #e6f1fb; border-color: #85b7eb; }
-  .stars { display: flex; gap: 6px; }
-  .star { font-size: 30px; color: #ddd; cursor: pointer; }
-  .star.lit { color: #ef9f27; }
-  button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; border: none;
-           border-radius: 10px; cursor: pointer; font-family: inherit; }
-  .btn-primary { background: #d85a30; color: #fff; }
-  .btn-primary:disabled { opacity: .5; }
-  .prog { height: 4px; background: #e5e5e5; border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
-  .prog-fill { height: 100%; background: #1d9e75; width: 0; transition: width .3s; }
-  #loading, #status { text-align: center; padding: 40px 20px; }
-  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #d85a30;
-             border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+  :root {
+    --navy: #123b63;
+    --blue: #1e6fa8;
+    --teal: #0f9b83;
+    --orange: #e7673b;
+    --ink: #17324d;
+    --muted: #66788a;
+    --line: #dce6ed;
+    --soft: #f2f7f9;
+    --white: #ffffff;
+    --shadow: 0 16px 40px rgba(28, 67, 92, .12);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    padding: 0 14px calc(112px + env(safe-area-inset-bottom));
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 8% 4%, rgba(15,155,131,.16), transparent 32%),
+      radial-gradient(circle at 96% 18%, rgba(30,111,168,.14), transparent 28%),
+      #eef4f6;
+    overflow-x: hidden;
+  }
+  #app { width: 100%; max-width: 640px; margin: 0 auto; }
+  .progress-shell {
+    position: sticky; top: 0; z-index: 20;
+    margin: 0 -14px 14px; padding: max(10px, env(safe-area-inset-top)) 16px 12px;
+    background: rgba(238,244,246,.92); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(18,59,99,.08);
+  }
+  .progress-inner { max-width: 640px; margin: 0 auto; }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .step-label { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .progress-percent { font-size: 12px; font-weight: 700; color: var(--teal); }
+  .prog { height: 7px; background: #d7e3e8; border-radius: 99px; overflow: hidden; }
+  .prog-fill {
+    height: 100%; width: 10%; border-radius: inherit;
+    background: linear-gradient(90deg, var(--teal), #43bda8);
+    transition: width .35s ease;
+  }
+  .card {
+    background: rgba(255,255,255,.98); border: 1px solid rgba(18,59,99,.07);
+    border-radius: 24px; padding: 22px 20px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .hero {
+    position: relative; overflow: hidden; color: #fff;
+    background: linear-gradient(135deg, var(--navy), #176b87 58%, var(--teal));
+    padding: 24px 22px;
+  }
+  .hero::before, .hero::after {
+    content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+    background: rgba(255,255,255,.10);
+  }
+  .hero::before { width: 150px; height: 150px; right: -55px; top: -70px; }
+  .hero::after { width: 90px; height: 90px; right: 42px; bottom: -55px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 7px; margin-bottom: 10px;
+    padding: 6px 10px; border-radius: 99px; background: rgba(255,255,255,.14);
+    font-size: 12px; font-weight: 700; letter-spacing: .02em;
+  }
+  h1 { position: relative; font-size: clamp(23px, 6vw, 30px); line-height: 1.3; margin: 0 0 8px; }
+  .sub { position: relative; font-size: 14px; line-height: 1.65; color: rgba(255,255,255,.84); margin: 0; }
+  .question-card { display: none; min-height: 340px; }
+  .question-card.active { display: block; animation: rise .28s ease both; }
+  .question-card.invalid { animation: shake .25s ease; border-color: rgba(220,72,72,.45); }
+  .qlabel { display: flex; align-items: flex-start; font-size: 20px; line-height: 1.5; font-weight: 750; margin: 0 0 8px; }
+  .qnum {
+    display: inline-flex; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 13px;
+    align-items: center; justify-content: center; margin: -2px 12px 0 0;
+    color: #fff; background: linear-gradient(135deg, var(--blue), var(--teal));
+    font-size: 15px; font-weight: 800; box-shadow: 0 7px 16px rgba(30,111,168,.22);
+  }
+  .qdesc { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0 0 18px; padding-left: 50px; }
+  .req { color: var(--orange); margin-left: 3px; }
+  textarea {
+    width: 100%; min-height: 150px; max-height: 330px; padding: 15px 16px;
+    font: inherit; font-size: 16px; line-height: 1.6; color: var(--ink);
+    border: 2px solid var(--line); border-radius: 16px; background: #fbfdfe;
+    resize: vertical; transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  #q3_project_detail { min-height: 250px; }
+  textarea::placeholder { color: #93a3af; }
+  textarea:focus { outline: none; border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(15,155,131,.11); }
+  .char-count { margin-top: 6px; text-align: right; font-size: 12px; color: #8a99a5; }
+  .chips { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .chip {
+    display: flex; align-items: center; width: 100%; min-height: 52px; padding: 11px 14px;
+    border-radius: 15px; border: 2px solid var(--line); background: #fff;
+    color: #40566a; font: inherit; font-size: 15px; font-weight: 600; text-align: left;
+    cursor: pointer; user-select: none; transition: transform .15s, border-color .18s, background .18s;
+  }
+  .chip::before {
+    content: ''; flex: 0 0 22px; width: 22px; height: 22px; margin-right: 11px;
+    border: 2px solid #b9c8d2; border-radius: 7px; background: #fff;
+  }
+  .chip:active, .radio:active { transform: scale(.985); }
+  .chip.sel { color: #075f53; border-color: #55bba8; background: #e9f8f4; }
+  .chip.sel::before {
+    content: '✓'; display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; border-color: var(--teal); background: var(--teal); font-size: 14px; font-weight: 800;
+  }
+  .select-count { margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--teal); text-align: right; }
+  .radio {
+    display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 12px 14px;
+    border-radius: 15px; cursor: pointer; margin-bottom: 9px; border: 2px solid var(--line);
+    background: #fff; color: #40566a; font-size: 15px; font-weight: 600; transition: .18s;
+  }
+  .radio input { width: 20px; height: 20px; accent-color: var(--teal); }
+  .radio.sel { color: #075f53; background: #e9f8f4; border-color: #55bba8; }
+  .stars { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; margin-top: 18px; min-width: 0; }
+  .star {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; min-width: 0; min-height: 68px; padding: 4px; border: 2px solid var(--line); border-radius: 15px;
+    background: #fff; color: #cbd5dc; font-size: 31px; line-height: 1; cursor: pointer; transition: .18s;
+  }
+  .star small { margin-top: 4px; color: #7d8e9c; font-size: 12px; }
+  .star.lit { color: #f3a326; border-color: #f2bd61; background: #fff8e9; transform: translateY(-2px); }
+  .nav-shell {
+    position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255,255,255,.94); backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(18,59,99,.10); box-shadow: 0 -10px 28px rgba(23,50,77,.08);
+  }
+  .nav-inner { display: flex; gap: 10px; width: 100%; max-width: 640px; margin: 0 auto; }
+  button { min-height: 52px; padding: 12px 16px; border: none; border-radius: 15px; font: inherit; font-size: 16px; font-weight: 750; cursor: pointer; }
+  .btn-primary { flex: 1; color: #fff; background: linear-gradient(135deg, var(--orange), #ee8458); box-shadow: 0 9px 20px rgba(231,103,59,.24); }
+  .btn-secondary { flex: 0 0 34%; color: var(--navy); background: #e8f0f4; }
+  .btn-primary:disabled { opacity: .48; box-shadow: none; }
+  .step-error { display: none; max-width: 640px; margin: 7px auto 0; color: #c04444; text-align: center; font-size: 12px; font-weight: 700; }
+  .step-error.show { display: block; }
+  #loading, #status { width: min(100%, 600px); margin: 0 auto; text-align: center; padding: 54px 22px; }
+  #status:not(.hidden) { margin-top: 14vh; background: #fff; border-radius: 24px; box-shadow: var(--shadow); }
+  .spinner { width: 38px; height: 38px; border: 4px solid #dce6ed; border-top-color: var(--teal); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 14px; }
+  .hidden { display: none !important; }
+  #debugLine { font-size: 11px; color: #8797a3; margin-top: 8px; white-space: pre-line; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .hidden { display: none; }
-  #debugLine { font-size: 11px; color: #999; margin-top: 8px; white-space: pre-line; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-5px); } 70% { transform: translateX(5px); } }
+  @media (min-width: 560px) {
+    body { padding-left: 22px; padding-right: 22px; }
+    .progress-shell { margin-left: -22px; margin-right: -22px; }
+    .card { padding: 28px; }
+    .chips { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 360px) {
+    body { padding-left: 10px; padding-right: 10px; }
+    .progress-shell { margin-left: -10px; margin-right: -10px; }
+    .card { padding: 19px 15px; border-radius: 20px; }
+    .hero { padding: 21px 17px; }
+    .qlabel { font-size: 18px; }
+    .qdesc { padding-left: 0; margin-top: 10px; }
+    .qnum { flex-basis: 34px; width: 34px; height: 34px; margin-right: 9px; }
+    .stars { gap: 4px; }
+    .star { min-height: 60px; font-size: 27px; border-radius: 12px; }
+    .nav-shell { padding-left: 10px; padding-right: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
@@ -54,66 +176,91 @@
 </div>
 
 <div id="app" class="hidden">
-  <div class="prog"><div class="prog-fill" id="prog"></div></div>
-
-  <div class="card">
-    <h1>บันทึกการเรียนรู้</h1>
-    <p class="sub" id="nameHint"></p>
+  <div class="progress-shell">
+    <div class="progress-inner">
+      <div class="progress-row">
+        <span class="step-label" id="stepLabel">คำถาม 1 จาก 10</span>
+        <span class="progress-percent" id="progressPercent">10%</span>
+      </div>
+      <div class="prog"><div class="prog-fill" id="prog"></div></div>
+    </div>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">1</span>นวัตกรรมใน 6 บูธมุ่งแก้ปัญหาเรื่องอะไร <span class="req">*</span></p>
-    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+  <div class="card hero">
+    <div class="eyebrow">✦ LEARNING CITY FEST 10</div>
+    <h1>บันทึกการเรียนรู้เพื่อถอดบทเรียน</h1>
+    <p class="sub" id="nameHint">ใช้เวลาประมาณ 7–10 นาที กรุณาตอบจากสิ่งที่สังเกตเห็นจริง ไม่มีคำตอบถูกหรือผิด</p>
+  </div>
+
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">1</span>จากทั้ง 6 บูธ ปัญหาหรือความต้องการสำคัญที่นวัตกรรมมุ่งแก้มีเรื่องใดบ้าง <span class="req">*</span></p>
+    <p class="qdesc">เลือกเฉพาะประเด็นที่ท่านเห็นชัดเจน เลือกได้มากกว่าหนึ่งข้อ</p>
     <div class="chips" data-q="q1"></div>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">2</span>"หัวใจ" ที่ทำให้นวัตกรรมสำเร็จคืออะไร <span class="req">*</span></p>
-    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">2</span>ปัจจัยใดเป็นเงื่อนไขสำคัญที่ทำให้นวัตกรรมเกิดผลจริง <span class="req">*</span></p>
+    <p class="qdesc">พิจารณาจากวิธีทำงานหรือหลักฐานที่เห็น เลือกได้ไม่เกิน 3 ข้อ</p>
     <div class="chips" data-q="q2"></div>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">3</span>บูธที่ต่อยอดได้จริงที่สุด + เหตุผล <span class="req">*</span></p>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">3</span>นวัตกรรมจากบูธใดมีความพร้อมต่อยอดในบริบทอื่นมากที่สุด <span class="req">*</span></p>
+    <p class="qdesc">เลือก 1 บูธ แล้วอธิบายเหตุผลที่เห็นว่าโครงการหรือนวัตกรรมนี้พร้อมต่อยอด</p>
     <div data-q="q3radio"></div>
-    <textarea id="q3_reason" placeholder="เหตุผล..." oninput="upd()"></textarea>
+    <textarea id="q3_reason" placeholder="ระบุจุดแข็ง หลักฐานที่ทำให้เชื่อว่าได้ผล และเงื่อนไขสำคัญในการนำไปใช้ต่อ" oninput="upd()"></textarea>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">4</span>สรุปองค์ความรู้ / ไอเดียที่ประทับใจ <span class="req">*</span></p>
-    <textarea id="q4_idea" placeholder="..." oninput="upd()"></textarea>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">4</span>กรุณาระบุรายละเอียดโครงการหรือกิจกรรมของสำนักงานศึกษาธิการจังหวัดที่ท่านเลือก <span class="req">*</span></p>
+    <p class="qdesc">ระบุชื่อโครงการ ปัญหา/วัตถุประสงค์ กลุ่มเป้าหมาย/พื้นที่ วิธีดำเนินงานสำคัญ และผลลัพธ์หรือหลักฐานที่พบ</p>
+    <textarea id="q3_project_detail" placeholder="ชื่อโครงการ/กิจกรรม:&#10;ปัญหาหรือวัตถุประสงค์:&#10;กลุ่มเป้าหมายและพื้นที่:&#10;วิธีดำเนินงานหรือกลไกสำคัญ:&#10;ผลลัพธ์/หลักฐานที่พบ:" oninput="upd()"></textarea>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">5</span>อุปสรรคใหญ่ที่สุดที่คาดว่าจะเจอ <span class="req">*</span></p>
-    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">5</span>บทเรียนสำคัญที่สุดที่ท่านได้จากทั้ง 6 บูธคืออะไร <span class="req">*</span></p>
+    <p class="qdesc">สรุปเป็นหลักการที่ผู้อื่นนำไปใช้ต่อได้ ไม่ใช่เพียงชื่อกิจกรรม</p>
+    <textarea id="q4_idea" placeholder="เขียนในรูปแบบ: เมื่อ... เราควร... เพราะ..." oninput="upd()"></textarea>
+  </div>
+
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">6</span>หากนำแนวคิดที่เลือกไปใช้ในบริบทของท่าน อุปสรรคใดมีแนวโน้มเกิดขึ้นมากที่สุด <span class="req">*</span></p>
+    <p class="qdesc">เลือกได้ไม่เกิน 3 ข้อ</p>
     <div class="chips" data-q="q5"></div>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">6</span>นวัตกรรมที่ "ทำแล้วไปต่อไม่ได้" เพราะอะไร <span class="req">*</span></p>
-    <p class="qdesc">เลือกได้มากกว่าหนึ่ง</p>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">7</span>ต้องเตรียมเงื่อนไขใดให้พร้อม เพื่อให้การต่อยอดเกิดขึ้นจริงและไม่หยุดกลางทาง <span class="req">*</span></p>
+    <p class="qdesc">เลือกสิ่งที่ควรจัดการก่อนเริ่ม ไม่เกิน 3 ข้อ</p>
     <div class="chips" data-q="q6"></div>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">7</span>อยากให้ ศธภ.10 สนับสนุนอะไร</p>
-    <p class="qdesc">ไม่บังคับ</p>
-    <textarea id="q7_support" placeholder="..." oninput="upd()"></textarea>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">8</span>ศธภ.10 ควรสนับสนุนอะไรอย่างเป็นรูปธรรม เพื่อช่วยให้ท่านเริ่มนำไปใช้ได้</p>
+    <p class="qdesc">ไม่บังคับ ระบุสิ่งที่ต้องการและช่วงเวลาที่ควรได้รับการสนับสนุน</p>
+    <textarea id="q7_support" placeholder="ตัวอย่าง: ต้องการ... สำหรับ... ภายในช่วง..." oninput="upd()"></textarea>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">8</span>โอกาสต่อยอด / ประยุกต์ใช้ในงานของท่าน <span class="req">*</span></p>
-    <textarea id="q8_application" placeholder="..." oninput="upd()"></textarea>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">9</span>ภายใน 90 วัน ท่านจะทดลองนำแนวคิดใดไปใช้กับงานหรือกลุ่มเป้าหมายใด <span class="req">*</span></p>
+    <p class="qdesc">ระบุขั้นตอนแรกที่ทำได้จริงและผลที่คาดว่าจะเห็น</p>
+    <textarea id="q8_application" placeholder="แนวคิด... / ใช้กับงานหรือกลุ่ม... / ขั้นตอนแรก... / ผลที่คาดหวัง..." oninput="upd()"></textarea>
   </div>
 
-  <div class="card">
-    <p class="qlabel"><span class="qnum">9</span>ความมั่นใจว่าจะนำไปใช้จริง <span class="req">*</span></p>
-    <p class="qdesc">1 = น้อยที่สุด, 5 = มากที่สุด</p>
+  <div class="card question-card">
+    <p class="qlabel"><span class="qnum">10</span>จากแผนในข้อ 9 ท่านมั่นใจเพียงใดว่าจะเริ่มทดลองได้ภายใน 90 วัน <span class="req">*</span></p>
+    <p class="qdesc">1 = ยังไม่พร้อม, 3 = ทำได้หากมีแรงสนับสนุน, 5 = พร้อมเริ่ม</p>
     <div class="stars" id="stars"></div>
   </div>
 
-  <button class="btn-primary" id="submitBtn" onclick="submitForm()" disabled>ส่งบันทึกการเรียนรู้</button>
+  <div class="nav-shell">
+    <div class="nav-inner">
+      <button type="button" class="btn-secondary" id="backBtn" onclick="prevStep()">← ย้อนกลับ</button>
+      <button type="button" class="btn-primary" id="nextBtn" onclick="nextStep()">ถัดไป →</button>
+      <button type="button" class="btn-primary hidden" id="submitBtn" onclick="submitForm()" disabled>ส่งบันทึกการเรียนรู้</button>
+    </div>
+    <p class="step-error" id="stepError" aria-live="polite">กรุณาตอบคำถามนี้ก่อนดำเนินการต่อ</p>
+  </div>
 </div>
 
 <div id="status" class="hidden"></div>
@@ -128,12 +275,14 @@
   var lineUserId = '';
   var starVal = 0;
   var q3booth = null;
+  var currentStep = 0;
+  var totalSteps = 10;
 
   var OPT = {
-    q1: ['คุณภาพการเรียนรู้/ผลสัมฤทธิ์','เด็กหลุดนอกระบบ/เหลื่อมล้ำ','ทักษะอาชีพ-ทักษะชีวิต','ภูมิปัญญา/อัตลักษณ์','ชุมชน-ภาคีเครือข่าย'],
-    q2: ['ครู/ผู้นำที่ทุ่มเท','การออกแบบกิจกรรมที่ดี','แรงหนุนจากชุมชน-ภาคี','ทรัพยากร/งบประมาณ','ข้อมูล/เทคโนโลยี'],
-    q5: ['ขาดคนสานต่อ/ย้าย-เกษียณ','ไม่มีงบต่อเนื่อง','ไม่มีเวลา','ขาดความรู้-ทักษะ','ผู้บริหารไม่สนับสนุน','ไม่มีข้อมูลยืนยันผล'],
-    q6: ['ขาดคนสานต่อ/ย้าย-เกษียณ','ไม่มีงบต่อเนื่อง','ไม่มีเวลา','ขาดความรู้-ทักษะ','ผู้บริหารไม่สนับสนุน','ไม่มีข้อมูลยืนยันผล']
+    q1: ['คุณภาพการเรียนรู้/ผลสัมฤทธิ์','เด็กหลุดนอกระบบ/ความเหลื่อมล้ำ','ทักษะอาชีพและทักษะชีวิต','ภูมิปัญญา/อัตลักษณ์ท้องถิ่น','การมีส่วนร่วมของชุมชน/ภาคี','การบริหารจัดการศึกษา/บริการผู้เรียน'],
+    q2: ['ทีมงานและผู้นำทำงานต่อเนื่อง','ออกแบบจากปัญหาและความต้องการของผู้ใช้','ชุมชน/ภาคีมีส่วนร่วมจริง','มีเวลาและทรัพยากรเพียงพอ','ใช้ข้อมูลติดตามผลและปรับปรุง','มีขั้นตอนหรือเครื่องมือที่นำไปใช้ซ้ำได้'],
+    q5: ['ขาดเจ้าภาพหรือทีมสานต่อ','งบประมาณ/ทรัพยากรไม่เพียงพอ','ภาระงานหรือเวลาไม่เอื้อ','ทักษะผู้ปฏิบัติไม่เพียงพอ','นโยบาย/ผู้บริหารไม่สนับสนุน','ขาดข้อมูลติดตามผล','บริบทพื้นที่หรือผู้ใช้ต่างจากต้นแบบ'],
+    q6: ['กำหนดเจ้าภาพและทีมสานต่อ','จัดงบประมาณ/ทรัพยากรต่อเนื่อง','บรรจุเวลาไว้ในแผนงาน','พัฒนาทักษะและจัดทำคู่มือ','ให้ผู้บริหารรับรองและติดตาม','กำหนดตัวชี้วัดและเก็บข้อมูลผลลัพธ์','ปรับรูปแบบให้เหมาะกับบริบทพื้นที่']
   };
   var BOOTHS = ['อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','บึงกาฬ','ศธภ.10'];
 
@@ -173,31 +322,54 @@
     ['q1','q2','q5','q6'].forEach(function(q){
       var box = document.querySelector('[data-q="'+q+'"]');
       box.innerHTML = OPT[q].map(function(o){
-        return '<span class="chip" onclick="toggleChip(this)">'+o+'</span>';
+        return '<button type="button" class="chip" aria-pressed="false" onclick="toggleChip(this)">'+o+'</button>';
       }).join('');
+      var counter = document.createElement('div');
+      counter.className = 'select-count';
+      counter.id = q + '_count';
+      box.insertAdjacentElement('afterend', counter);
     });
     var r = document.querySelector('[data-q="q3radio"]');
     r.innerHTML = BOOTHS.map(function(b,i){
+      var officeName = (b === 'ศธภ.10') ? 'สำนักงานศึกษาธิการภาค 10' : 'สำนักงานศึกษาธิการจังหวัด' + b;
       return '<label class="radio" onclick="selBooth('+i+',this)">' +
-        '<input type="radio" name="q3" value="'+b+'"> สำนักงานศึกษาธิการจังหวัด'+b+'</label>';
+        '<input type="radio" name="q3" value="'+b+'"> '+officeName+'</label>';
     }).join('');
     var s = document.getElementById('stars');
     s.innerHTML = [1,2,3,4,5].map(function(n){
-      return '<span class="star" onclick="setStar('+n+')">★</span>';
+      return '<button type="button" class="star" aria-label="ระดับ '+n+'" aria-pressed="false" onclick="setStar('+n+')">★<small>'+n+'</small></button>';
     }).join('');
+    initTextareas();
+    updateSelectionCounts();
+    showStep(0, false);
+    upd();
   }
 
-  function toggleChip(el){ el.classList.toggle('sel'); upd(); }
+  function toggleChip(el){
+    var q = el.parentElement.getAttribute('data-q');
+    var max = (q === 'q2' || q === 'q5' || q === 'q6') ? 3 : 0;
+    if (!el.classList.contains('sel') && max && getChips(q).length >= max) {
+      alert('เลือกได้ไม่เกิน ' + max + ' ข้อ');
+      return;
+    }
+    el.classList.toggle('sel');
+    el.setAttribute('aria-pressed', el.classList.contains('sel') ? 'true' : 'false');
+    upd();
+  }
   function selBooth(i, el){
     q3booth = BOOTHS[i];
     document.querySelectorAll('[data-q="q3radio"] .radio').forEach(function(r,idx){
       r.classList.toggle('sel', idx===i);
+      r.querySelector('input').checked = (idx===i);
     });
     upd();
   }
   function setStar(n){
     starVal = n;
-    document.querySelectorAll('.star').forEach(function(s,i){ s.classList.toggle('lit', i<n); });
+    document.querySelectorAll('.star').forEach(function(s,i){
+      s.classList.toggle('lit', i<n);
+      s.setAttribute('aria-pressed', i === n-1 ? 'true' : 'false');
+    });
     upd();
   }
 
@@ -207,29 +379,131 @@
     ).map(function(c){ return c.textContent; });
   }
 
+  function initTextareas(){
+    document.querySelectorAll('textarea').forEach(function(el){
+      el.maxLength = (el.id === 'q3_project_detail') ? 1600 : 1000;
+      var counter = document.createElement('div');
+      counter.className = 'char-count';
+      counter.id = el.id + '_counter';
+      el.insertAdjacentElement('afterend', counter);
+      el.addEventListener('input', function(){
+        autoGrow(el);
+        updateTextCounter(el);
+      });
+      updateTextCounter(el);
+    });
+  }
+
+  function autoGrow(el){
+    el.style.height = 'auto';
+    el.style.height = Math.min(Math.max(el.scrollHeight, 150), 330) + 'px';
+  }
+
+  function updateTextCounter(el){
+    var counter = document.getElementById(el.id + '_counter');
+    if (counter) counter.textContent = el.value.length + ' / ' + el.maxLength + ' ตัวอักษร';
+  }
+
+  function updateSelectionCounts(){
+    ['q1','q2','q5','q6'].forEach(function(q){
+      var count = getChips(q).length;
+      var max = (q === 'q2' || q === 'q5' || q === 'q6') ? 3 : 0;
+      var el = document.getElementById(q + '_count');
+      if (el) el.textContent = count ? ('เลือกแล้ว ' + count + (max ? '/' + max : '') + ' ข้อ') : 'ยังไม่ได้เลือก';
+    });
+  }
+
+  function isStepComplete(index){
+    if (index === 0) return getChips('q1').length > 0;
+    if (index === 1) return getChips('q2').length > 0;
+    if (index === 2) return !!q3booth && !!document.getElementById('q3_reason').value.trim();
+    if (index === 3) return !!document.getElementById('q3_project_detail').value.trim();
+    if (index === 4) return !!document.getElementById('q4_idea').value.trim();
+    if (index === 5) return getChips('q5').length > 0;
+    if (index === 6) return getChips('q6').length > 0;
+    if (index === 7) return true; // การสนับสนุนไม่บังคับ
+    if (index === 8) return !!document.getElementById('q8_application').value.trim();
+    if (index === 9) return starVal > 0;
+    return false;
+  }
+
+  function firstMissingStep(){
+    for (var i = 0; i < totalSteps; i++) if (!isStepComplete(i)) return i;
+    return -1;
+  }
+
+  function showStep(index, scrollPage){
+    currentStep = Math.max(0, Math.min(index, totalSteps - 1));
+    document.querySelectorAll('.question-card').forEach(function(card, i){
+      card.classList.toggle('active', i === currentStep);
+    });
+    document.querySelector('.hero').classList.toggle('hidden', currentStep > 0);
+    var pct = Math.round((currentStep + 1) / totalSteps * 100);
+    document.getElementById('stepLabel').textContent = 'คำถาม ' + (currentStep + 1) + ' จาก ' + totalSteps;
+    document.getElementById('progressPercent').textContent = pct + '%';
+    document.getElementById('prog').style.width = pct + '%';
+    document.getElementById('backBtn').classList.toggle('hidden', currentStep === 0);
+    document.getElementById('nextBtn').classList.toggle('hidden', currentStep === totalSteps - 1);
+    document.getElementById('submitBtn').classList.toggle('hidden', currentStep !== totalSteps - 1);
+    document.getElementById('stepError').classList.remove('show');
+    if (scrollPage !== false) window.scrollTo({ top: 0, behavior: 'smooth' });
+    upd();
+  }
+
+  function showStepError(message){
+    var error = document.getElementById('stepError');
+    error.textContent = message || 'กรุณาตอบคำถามนี้ก่อนดำเนินการต่อ';
+    error.classList.add('show');
+    var card = document.querySelectorAll('.question-card')[currentStep];
+    card.classList.remove('invalid');
+    void card.offsetWidth;
+    card.classList.add('invalid');
+  }
+
+  function nextStep(){
+    if (!isStepComplete(currentStep)) {
+      showStepError('กรุณาตอบคำถามนี้ให้ครบก่อนกดถัดไป');
+      return;
+    }
+    showStep(currentStep + 1);
+  }
+
+  function prevStep(){ showStep(currentStep - 1); }
+
   function upd(){
-    var done = 0, total = 9;
+    var done = 0, total = 10;
     if (getChips('q1').length) done++;
     if (getChips('q2').length) done++;
     if (q3booth && document.getElementById('q3_reason').value.trim()) done++;
+    if (document.getElementById('q3_project_detail').value.trim()) done++;
     if (document.getElementById('q4_idea').value.trim()) done++;
     if (getChips('q5').length) done++;
     if (getChips('q6').length) done++;
     if (document.getElementById('q8_application').value.trim()) done++;
     if (starVal > 0) done++;
     done++; // q7 ไม่บังคับ
-    var pct = Math.round(done/total*100);
-    document.getElementById('prog').style.width = pct + '%';
+    updateSelectionCounts();
+    document.querySelectorAll('textarea').forEach(updateTextCounter);
     document.getElementById('submitBtn').disabled = (done < total);
+    document.getElementById('stepError').classList.remove('show');
   }
 
   async function submitForm(){
+    var missing = firstMissingStep();
+    if (missing >= 0) {
+      showStep(missing);
+      showStepError('ยังมีคำถามที่ต้องตอบ กรุณากรอกข้อมูลให้ครบ');
+      return;
+    }
+    var projectDetail = document.getElementById('q3_project_detail').value.trim();
+    var transferReason = document.getElementById('q3_reason').value.trim();
     var payload = {
       lineUserId: lineUserId,
       q1_topics: getChips('q1').join(','),
       q2_heart: getChips('q2').join(','),
       q3_booth: q3booth,
-      q3_reason: document.getElementById('q3_reason').value.trim(),
+      q3_reason: '[รายละเอียดโครงการ/กิจกรรม]\n' + projectDetail +
+                 '\n\n[เหตุผลที่พร้อมต่อยอด]\n' + transferReason,
       q4_idea: document.getElementById('q4_idea').value.trim(),
       q5_obstacles: getChips('q5').join(','),
       q6_sustainability: getChips('q6').join(','),
@@ -246,22 +520,13 @@
     } catch (e) { showError(e.message); }
   }
 
-  // ── v2: เพิ่ม NOT_UNLOCKED และ reason ทั้งหมดที่ backend ส่งได้ ──
   function errMsg(reason){
-    var m = {
-      NOT_UNLOCKED:       'ยังไม่ได้รับการปลดล็อก กรุณาติดต่อเจ้าหน้าที่',
-      STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ กรุณาติดต่อเจ้าหน้าที่',
-      NOT_ACTIVATED:      'กรุณายืนยันตัวตนในงานก่อน',
-      NOT_FOUND:          'ไม่พบข้อมูลของท่าน กรุณาติดต่อเจ้าหน้าที่',
-      ALREADY_SUBMITTED:  'ท่านส่งบันทึกการเรียนรู้แล้ว',
-      MISSING_FIELD:      'กรุณากรอกข้อมูลให้ครบทุกข้อ',
-      SAVE_ERROR:         'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่',
-      UNAUTHORIZED:       'ยืนยันตัวตนไม่สำเร็จ กรุณาปิดแล้วเปิดใหม่',
-      INVALID_TOKEN:      'ยืนยันตัวตนไม่สำเร็จ กรุณาปิดแล้วเปิดใหม่'
-    };
-    return m[reason] || ('เกิดข้อผิดพลาด (' + reason + ')');
+    var m = { STICKERS_INCOMPLETE:'ยังเดินบูธไม่ครบ 6 บูธ', ALREADY_SUBMITTED:'ท่านส่งบันทึกแล้ว',
+      NOT_ACTIVATED:'กรุณายืนยันตัวตนก่อน', MISSING_FIELD:'กรุณากรอกข้อมูลให้ครบ',
+      MISSING_PHOTO:'กรุณาแนบรูปสมุด Passport ที่ติดสติกเกอร์ครบ 6 บูธ',
+      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
+    return m[reason] || 'เกิดข้อผิดพลาด';
   }
-
   function showSuccess(msg){
     document.getElementById('status').innerHTML =
       '<div style="font-size:40px">✅</div><p style="white-space:pre-line">'+msg+'</p>' +
@@ -274,7 +539,7 @@
       '<button class="btn-primary" onclick="show(\'app\')">กลับไปแก้ไข</button>';
     show('status');
     var btn = document.getElementById('submitBtn');
-    if (btn) { btn.disabled = false; btn.textContent = 'ส่งบันทึกการเรียนรู้'; }
+    btn.disabled = false; btn.textContent = 'ส่งบันทึกการเรียนรู้';
   }
   function closeLiff(){ if (liff.isInClient()) liff.closeWindow(); }
 
