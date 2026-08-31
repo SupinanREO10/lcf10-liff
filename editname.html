@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Learning City Fest 10 — แก้ไขชื่อ</title>
+<title>Learning City Fest 10 — แก้ไขข้อมูลลงทะเบียน</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Sarabun', -apple-system, sans-serif; margin: 0; padding: 16px;
@@ -47,7 +47,7 @@
 
 <div id="app" class="hidden">
   <div class="card">
-    <h1>แก้ไขข้อมูลบนเกียรติบัตร</h1>
+    <h1>แก้ไขข้อมูลลงทะเบียน</h1>
     <p class="sub">ตรวจสอบและแก้ไขให้ถูกต้องก่อนยืนยัน</p>
     <div class="warn">ชื่อนี้จะใช้บนเกียรติบัตร เมื่อยืนยันแล้วจะไม่สามารถแก้ไขได้</div>
 
@@ -67,6 +67,16 @@
     <label>จังหวัด <span class="req">*</span></label>
     <select id="province" onchange="onOther('province')"></select>
     <input type="text" id="provinceOther" class="hidden" placeholder="ระบุจังหวัด" style="margin-top:8px">
+
+    <label>หน่วยงาน <span class="req">*</span></label>
+    <select id="organization" onchange="onOther('organization')"></select>
+    <input type="text" id="organizationOther" class="hidden" placeholder="โปรดระบุชื่อหน่วยงาน" style="margin-top:8px">
+
+    <label>เบอร์โทรศัพท์</label>
+    <input type="text" id="phone" inputmode="tel" placeholder="08XXXXXXXX" maxlength="10">
+
+    <label>อีเมล</label>
+    <input type="text" id="email" inputmode="email" placeholder="example@email.com">
 
     <div class="preview">
       <p class="preview-label">ชื่อบนเกียรติบัตร</p>
@@ -91,6 +101,7 @@
   var PID = '';
   var lineUserId = '';
   var participant = null;
+  var isSaving = false;
 
   function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
   function show(id){ ['loading','app','status'].forEach(function(x){
@@ -105,8 +116,10 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // เลี่ยง CORS preflight
       body: JSON.stringify({ apiAction: action, payload: payload || {}, idToken: idToken })
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    if (!res.ok) throw new Error('ระบบไม่สามารถเชื่อมต่อได้ (HTTP ' + res.status + ')');
+    var text = await res.text();
+    try { return JSON.parse(text); }
+    catch (e) { throw new Error('ระบบตอบกลับไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง'); }
   }
 
   function resolvePid(){
@@ -132,8 +145,7 @@
       PID = resolvePid();
       dbg('3) PID=' + PID + ' · โหลดข้อมูล...');
       var p = await api('getParticipantForEdit', { participantId: PID });
-      if (p && p.reason === 'UNAUTHORIZED') { showError('ยืนยันตัวตนไม่สำเร็จ — ตรวจว่าเปิด scope openid ใน LIFF'); return; }
-      if (!p) { showError('ไม่พบข้อมูล (PID=' + PID + ')'); return; }
+      if (!p || !p.ok) { showError(errMsg(p && p.reason, p && p.message)); return; }
       if (p.nameLocked) { showLocked(); return; }
       participant = p;
       buildForm(p);
@@ -155,8 +167,12 @@
 
     var roles = await api('getRoles');
     var provs = await api('getProvinces');
+    var orgs = await api('getOrganizations');
     fillSelect('position', roles, p.position || '', 'positionOther', '— เลือก —');
     fillSelect('province', provs, p.province || '', 'provinceOther', '— เลือกจังหวัด —');
+    fillSelect('organization', orgs, p.organization || '', 'organizationOther', '— เลือกหน่วยงาน —');
+    document.getElementById('phone').value = p.phone || '';
+    document.getElementById('email').value = p.email || '';
 
     updatePreview();
   }
@@ -164,7 +180,8 @@
   // เติม select + จัดการค่าเดิม: ถ้าค่าเดิมไม่อยู่ในลิสต์ → เลือก "อื่นๆ" แล้วโชว์ช่องระบุ
   function fillSelect(selId, list, current, otherId, placeholder){
     var inList = current && list.indexOf(current) > -1;
-    var pick = inList ? current : (current ? 'อื่นๆ' : '');
+    var otherValue = selId === 'organization' ? 'หน่วยงานอื่น ๆ' : 'อื่นๆ';
+    var pick = inList ? current : (current ? otherValue : '');
     document.getElementById(selId).innerHTML =
       '<option value="">'+placeholder+'</option>' +
       list.map(function(x){ return '<option value="'+x+'"'+(x===pick?' selected':'')+'>'+x+'</option>'; }).join('');
@@ -176,14 +193,18 @@
   // โชว์/ซ่อนช่อง "ระบุ" เมื่อเลือก/ไม่เลือก "อื่นๆ"
   function onOther(selId){
     var other = document.getElementById(selId + 'Other');
-    if (document.getElementById(selId).value === 'อื่นๆ') other.classList.remove('hidden');
+    if (isOtherSelection_(document.getElementById(selId).value)) other.classList.remove('hidden');
     else { other.classList.add('hidden'); other.value=''; }
+  }
+
+  function isOtherSelection_(value){
+    return value === 'อื่นๆ' || value === 'หน่วยงานอื่น ๆ';
   }
 
   // ค่าจริงที่จะบันทึก: ถ้าเลือก "อื่นๆ" ใช้ข้อความที่พิมพ์ (ถ้าว่างใช้ "อื่นๆ")
   function resolveVal(selId){
     var v = document.getElementById(selId).value;
-    if (v === 'อื่นๆ') { var t = document.getElementById(selId+'Other').value.trim(); return t || 'อื่นๆ'; }
+    if (isOtherSelection_(v)) { return document.getElementById(selId+'Other').value.trim(); }
     return v;
   }
 
@@ -193,37 +214,56 @@
     var ln = document.getElementById('lastName').value.trim();
     document.getElementById('previewName').textContent = (pf+' '+fn+' '+ln).trim() || '—';
     if (participant) document.getElementById('previewSub').textContent =
-      (resolveVal('position')||'') + ' · ' + (participant.organization||'');
+      (resolveVal('position')||'') + ' · ' + (resolveVal('organization')||'');
     document.getElementById('saveBtn').disabled = !(fn && ln);
   }
 
   async function save(){
+    if (isSaving) return;
     var province = resolveVal('province');
     if (!province) { alert('กรุณาเลือกจังหวัด'); return; }
+    var organization = resolveVal('organization');
+    if (!organization) { alert('กรุณาเลือกหรือระบุชื่อหน่วยงาน'); return; }
+    var phone = document.getElementById('phone').value.replace(/[-\s]/g, '');
+    var email = document.getElementById('email').value.trim();
+    if (phone && !/^0[0-9]{9}$/.test(phone)) { alert('เบอร์โทรไม่ถูกต้อง ต้องขึ้นต้น 0 และมี 10 หลัก'); return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
     var payload = {
       participantId: PID,
       prefix: document.getElementById('prefix').value,
       firstName: document.getElementById('firstName').value.trim(),
       lastName: document.getElementById('lastName').value.trim(),
       position: resolveVal('position'),
+      organization: organization,
       province: province,
+      phone: phone,
+      email: email,
       lineUserId: lineUserId
     };
     var btn = document.getElementById('saveBtn');
+    isSaving = true;
     btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
     try {
       var res = await api('saveNameEdit', payload);
-      if (res.ok) showSuccess('บันทึกข้อมูลเรียบร้อย: ' + res.fullName + '\nกรุณากลับไปกด "ยืนยัน" ในแชต');
-      else showError(errMsg(res.reason));
-    } catch (e) { showError(e.message); }
-    btn.disabled = false; btn.textContent = 'บันทึกและดำเนินการต่อ';
+      if (res.ok) showSuccess('บันทึกข้อมูลเรียบร้อยแล้ว');
+      else showError(errMsg(res.reason, res.message));
+    } catch (e) { showError(e.message || 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่'); }
+    finally {
+      isSaving = false;
+      btn.disabled = false; btn.textContent = 'บันทึกและดำเนินการต่อ';
+    }
   }
 
-  function errMsg(reason){
+  function errMsg(reason, detail){
     var m = { EMPTY_NAME:'กรุณากรอกชื่อและนามสกุล', INVALID_PREFIX:'คำนำหน้าไม่ถูกต้อง',
       NAME_LOCKED:'ชื่อถูกล็อกแล้ว ไม่สามารถแก้ไขได้', NOT_FOUND:'ไม่พบข้อมูล',
-      UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ' };
-    return m[reason] || 'เกิดข้อผิดพลาด';
+      ALREADY_EDITED:'ข้อมูลรายการนี้ได้รับการยืนยันและบันทึกแล้ว',
+      EMPTY_ORGANIZATION:'กรุณาเลือกหรือระบุชื่อหน่วยงาน', EMPTY_PROVINCE:'กรุณาเลือกจังหวัด',
+      INVALID_PHONE:'เบอร์โทรไม่ถูกต้อง', INVALID_EMAIL:'อีเมลไม่ถูกต้อง',
+      SAVE_ERROR:'ยังบันทึกข้อมูลไม่ได้ กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่',
+      INVALID_TOKEN:'ยืนยันบัญชี LINE ไม่สำเร็จ กรุณาปิดแล้วเปิดแบบฟอร์มใหม่',
+      UNAUTHORIZED:'บัญชี LINE นี้ไม่มีสิทธิ์แก้ไขข้อมูลรายการดังกล่าว' };
+    return m[reason] || detail || 'เกิดข้อผิดพลาด กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่';
   }
   function showSuccess(msg){
     document.getElementById('status').innerHTML =

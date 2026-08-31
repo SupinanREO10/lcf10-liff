@@ -58,7 +58,8 @@
     <input type="text" id="positionOther" class="hidden" placeholder="ระบุตำแหน่ง / บทบาท" style="margin-top:8px">
 
     <label>หน่วยงาน <span class="req">*</span></label>
-    <input type="text" id="organization" placeholder="ชื่อหน่วยงาน">
+    <select id="organization" onchange="onOther('organization')"></select>
+    <input type="text" id="organizationOther" class="hidden" placeholder="โปรดระบุชื่อหน่วยงาน" style="margin-top:8px">
 
     <label>จังหวัด <span class="req">*</span></label>
     <select id="province" onchange="onOther('province')"></select>
@@ -86,10 +87,12 @@
   // ════════════════════════════════════════
 
   var lineUserId = '';
+  var isSubmitting = false;
   var FALLBACK_OPTIONS = {
     prefixes: ['นาย','นาง','นางสาว','ดร.','รศ.ดร.','ผศ.ดร.','พ.ต.ท.','พ.ต.อ.','ว่าที่ ร.ต.','อ.','ผอ.'],
     roles: ['ผู้บริหารการศึกษา','ผู้บริหารสถานศึกษา','ศึกษานิเทศก์','ครู','บุคลากรทางการศึกษา','นักเรียน','อื่นๆ'],
-    provinces: ['อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','บึงกาฬ','อื่นๆ']
+    provinces: ['อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','บึงกาฬ','สำนักงานศึกษาธิการภาค 10','อื่นๆ'],
+    organizations: ['สำนักงานศึกษาธิการจังหวัดอุดรธานี','สำนักงานศึกษาธิการจังหวัดเลย','สำนักงานศึกษาธิการจังหวัดหนองบัวลำภู','สำนักงานศึกษาธิการจังหวัดหนองคาย','สำนักงานศึกษาธิการจังหวัดบึงกาฬ','สำนักงานศึกษาธิการภาค 10','หน่วยงานอื่น ๆ']
   };
 
   function dbg(m){ var el=document.getElementById('debugLine'); if(el) el.textContent += m+'\n'; }
@@ -106,8 +109,10 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ apiAction: action, payload: payload, idToken: idToken })
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    if (!res.ok) throw new Error('ระบบไม่สามารถเชื่อมต่อได้ (HTTP ' + res.status + ')');
+    var text = await res.text();
+    try { return JSON.parse(text); }
+    catch (e) { throw new Error('ระบบตอบกลับไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง'); }
   }
 
   async function init(){
@@ -134,7 +139,8 @@
         options = {
           prefixes: normalizeList_(response.prefixes, FALLBACK_OPTIONS.prefixes),
           roles: normalizeList_(response.roles, FALLBACK_OPTIONS.roles),
-          provinces: normalizeList_(response.provinces, FALLBACK_OPTIONS.provinces)
+          provinces: normalizeList_(response.provinces, FALLBACK_OPTIONS.provinces),
+          organizations: normalizeList_(response.organizations, FALLBACK_OPTIONS.organizations)
         };
       } else {
         dbg('ใช้รายการตัวเลือกสำรอง: ' + ((response && response.reason) || 'invalid response'));
@@ -146,6 +152,7 @@
 
     fillSelect_('prefix', options.prefixes, '— เลือกคำนำหน้า —');
     fillSelect_('position', options.roles, '— เลือกตำแหน่ง / บทบาท —');
+    fillSelect_('organization', options.organizations || FALLBACK_OPTIONS.organizations, '— เลือกหน่วยงาน —');
     fillSelect_('province', options.provinces, '— เลือกจังหวัด —');
   }
 
@@ -175,15 +182,19 @@
 
   function onOther(selId){
     var other = document.getElementById(selId + 'Other');
-    if (document.getElementById(selId).value === 'อื่นๆ') other.classList.remove('hidden');
+    if (isOtherSelection_(document.getElementById(selId).value)) other.classList.remove('hidden');
     else { other.classList.add('hidden'); other.value = ''; }
+  }
+
+  function isOtherSelection_(value){
+    return value === 'อื่นๆ' || value === 'หน่วยงานอื่น ๆ';
   }
 
   function resolveVal(selId){
     var value = document.getElementById(selId).value;
-    if (value === 'อื่นๆ') {
+    if (isOtherSelection_(value)) {
       var custom = document.getElementById(selId + 'Other').value.trim();
-      return custom || 'อื่นๆ';
+      return custom;
     }
     return value;
   }
@@ -201,12 +212,15 @@
     ['prefix','firstName','lastName','organization','province'].forEach(function(f){
       if (!document.getElementById(f).value.trim()) ok = false;
     });
-    if (document.getElementById('province').value === 'อื่นๆ' &&
-        !document.getElementById('provinceOther').value.trim()) ok = false;
+    ['province','organization'].forEach(function(id){
+      if (isOtherSelection_(document.getElementById(id).value) &&
+          !document.getElementById(id + 'Other').value.trim()) ok = false;
+    });
     return ok;
   }
 
   async function submitForm(){
+    if (isSubmitting) return;
     if (!validate()) { alert('กรุณากรอกข้อมูลให้ครบและถูกต้อง'); return; }
     var payload = {
       lineUserId: lineUserId,
@@ -214,25 +228,32 @@
       firstName: document.getElementById('firstName').value.trim(),
       lastName: document.getElementById('lastName').value.trim(),
       position: resolveVal('position'),
-      organization: document.getElementById('organization').value.trim(),
+      organization: resolveVal('organization'),
       province: resolveVal('province'),
       phone: document.getElementById('phone').value.replace(/[-\s]/g,''),
       email: document.getElementById('email').value.trim()
     };
     var btn = document.getElementById('submitBtn');
+    isSubmitting = true;
     btn.disabled = true; btn.textContent = 'กำลังลงทะเบียน...';
     try {
       var res = await api('saveWalkIn', payload);
       if (res.ok) showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + '\nระบบส่งการ์ดข้อมูลการลงทะเบียนให้ในแชท LINE แล้ว');
-      else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber + '\nระบบส่งการ์ดข้อมูลให้ในแชท LINE อีกครั้งแล้ว');
-      else showError(errMsg(res.reason));
-    } catch (e) { showError(e.message); }
+      else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber + '\nระบบจะใช้ข้อมูลรายการเดิมโดยไม่สร้างรายการซ้ำ');
+      else showError(errMsg(res.reason, res.message));
+    } catch (e) { showError(e.message || 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่'); }
+    finally { isSubmitting = false; }
   }
 
-  function errMsg(reason){
+  function errMsg(reason, detail){
     var m = { EMPTY_NAME:'กรุณากรอกชื่อและนามสกุล', INVALID_PHONE:'เบอร์โทรไม่ถูกต้อง',
-      INVALID_EMAIL:'อีเมลไม่ถูกต้อง', UNAUTHORIZED:'ยืนยันตัวตนไม่สำเร็จ (ตรวจ scope openid)' };
-    return m[reason] || 'เกิดข้อผิดพลาด';
+      INVALID_EMAIL:'อีเมลไม่ถูกต้อง', INVALID_PREFIX:'กรุณาเลือกคำนำหน้าจากรายการ',
+      EMPTY_ORGANIZATION:'กรุณาเลือกหรือระบุชื่อหน่วยงาน', EMPTY_PROVINCE:'กรุณาเลือกจังหวัด',
+      SYSTEM_BUSY:'ขณะนี้มีผู้ใช้งานจำนวนมาก กรุณารอสักครู่แล้วลองใหม่',
+      SAVE_ERROR:'ยังบันทึกข้อมูลไม่ได้ กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่',
+      INVALID_TOKEN:'ยืนยันบัญชี LINE ไม่สำเร็จ กรุณาปิดแล้วเปิดแบบฟอร์มใหม่',
+      UNAUTHORIZED:'ยืนยันบัญชี LINE ไม่สำเร็จ กรุณาปิดแล้วเปิดแบบฟอร์มใหม่' };
+    return m[reason] || detail || 'เกิดข้อผิดพลาด กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่';
   }
   function showSuccess(msg){
     document.getElementById('status').innerHTML =
