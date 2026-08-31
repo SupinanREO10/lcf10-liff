@@ -104,8 +104,8 @@
     <div class="photo-card">
       <div class="photo-head"><div><h2 class="photo-title">Passport ด้านหน้า</h2><p class="photo-hint">วางภาพให้ตรงและเห็นรายละเอียดครบ</p></div><span class="required">จำเป็น</span></div>
       <label class="upload" id="frontZone">
-        <input type="file" id="frontPhoto" accept="image/*" capture="environment" onchange="onPhoto('front',event)">
-        <div class="upload-copy"><span class="camera">📷</span>แตะเพื่อถ่ายภาพ<br>หรือเลือกจากโทรศัพท์</div>
+        <input type="file" id="frontPhoto" accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif" onchange="onPhoto('front',event)">
+        <div class="upload-copy"><span class="camera">🖼️</span>แตะเพื่อเลือกภาพ<br>จากคลังรูปภาพ</div>
         <img class="preview" id="frontPreview" alt="ตัวอย่างภาพด้านหน้า"><span class="change">แตะเพื่อเปลี่ยนภาพ</span>
       </label>
     </div>
@@ -113,8 +113,8 @@
     <div class="photo-card">
       <div class="photo-head"><div><h2 class="photo-title">Passport ด้านหลัง</h2><p class="photo-hint">ตรวจว่าภาพชัด ไม่มืด และไม่ถูกตัด</p></div><span class="required">จำเป็น</span></div>
       <label class="upload" id="backZone">
-        <input type="file" id="backPhoto" accept="image/*" capture="environment" onchange="onPhoto('back',event)">
-        <div class="upload-copy"><span class="camera">📷</span>แตะเพื่อถ่ายภาพ<br>หรือเลือกจากโทรศัพท์</div>
+        <input type="file" id="backPhoto" accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif" onchange="onPhoto('back',event)">
+        <div class="upload-copy"><span class="camera">🖼️</span>แตะเพื่อเลือกภาพ<br>จากคลังรูปภาพ</div>
         <img class="preview" id="backPreview" alt="ตัวอย่างภาพด้านหลัง"><span class="change">แตะเพื่อเปลี่ยนภาพ</span>
       </label>
     </div>
