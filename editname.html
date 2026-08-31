@@ -245,7 +245,13 @@
     btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
     try {
       var res = await api('saveNameEdit', payload);
-      if (res.ok) showSuccess('บันทึกข้อมูลเรียบร้อยแล้ว');
+      if (res.ok) {
+        var queueLine = res.queueNumber ? '\nหมายเลขคิว: ' + res.queueNumber : '';
+        var notifyLine = res.notificationSent === false
+          ? '\nกรุณากลับไปที่แชต LINE และกดเมนูตรวจสอบสถานะอีกครั้ง'
+          : '\nระบบส่งการ์ดยืนยันตัวตนให้ในแชต LINE แล้ว';
+        showSuccess('บันทึกข้อมูลเรียบร้อยแล้ว' + queueLine + notifyLine);
+      }
       else showError(errMsg(res.reason, res.message));
     } catch (e) { showError(e.message || 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่'); }
     finally {
