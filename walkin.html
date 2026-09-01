@@ -45,7 +45,8 @@
     <p class="sub">กรอกข้อมูลเพื่อเข้าร่วมงาน</p>
 
     <label>คำนำหน้า <span class="req">*</span></label>
-    <select id="prefix"></select>
+    <select id="prefix" onchange="onOther('prefix')"></select>
+    <input type="text" id="prefixOther" class="hidden" placeholder="โปรดระบุคำนำหน้า" maxlength="30" style="margin-top:8px">
 
     <label>ชื่อ <span class="req">*</span></label>
     <input type="text" id="firstName" placeholder="ชื่อ">
@@ -89,7 +90,7 @@
   var lineUserId = '';
   var isSubmitting = false;
   var FALLBACK_OPTIONS = {
-    prefixes: ['นาย','นาง','นางสาว','ดร.','รศ.ดร.','ผศ.ดร.','พ.ต.ท.','พ.ต.อ.','ว่าที่ ร.ต.','อ.','ผอ.'],
+    prefixes: ['นาย','นาง','นางสาว','ดร.','รศ.ดร.','ผศ.ดร.','พ.ต.ท.','พ.ต.อ.','ว่าที่ ร.ต.','อื่นๆ'],
     roles: ['ผู้บริหารการศึกษา','ผู้บริหารสถานศึกษา','ศึกษานิเทศก์','ครู','บุคลากรทางการศึกษา','นักเรียน','อื่นๆ'],
     provinces: ['อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','บึงกาฬ','สำนักงานศึกษาธิการภาค 10','อื่นๆ'],
     organizations: ['สำนักงานศึกษาธิการจังหวัดอุดรธานี','สำนักงานศึกษาธิการจังหวัดเลย','สำนักงานศึกษาธิการจังหวัดหนองบัวลำภู','สำนักงานศึกษาธิการจังหวัดหนองคาย','สำนักงานศึกษาธิการจังหวัดบึงกาฬ','สำนักงานศึกษาธิการภาค 10','หน่วยงานอื่น ๆ']
@@ -150,7 +151,9 @@
       dbg('ใช้รายการตัวเลือกสำรอง: ' + e.message);
     }
 
-    fillSelect_('prefix', options.prefixes, '— เลือกคำนำหน้า —');
+    var prefixes = options.prefixes.filter(function(x){ return x !== 'อ.' && x !== 'ผอ.' && x !== 'อื่น ๆ'; });
+    if (prefixes.indexOf('อื่นๆ') < 0) prefixes.push('อื่นๆ');
+    fillSelect_('prefix', prefixes, '— เลือกคำนำหน้า —');
     fillSelect_('position', options.roles, '— เลือกตำแหน่ง / บทบาท —');
     fillSelect_('organization', options.organizations || FALLBACK_OPTIONS.organizations, '— เลือกหน่วยงาน —');
     fillSelect_('province', options.provinces, '— เลือกจังหวัด —');
@@ -212,7 +215,7 @@
     ['prefix','firstName','lastName','organization','province'].forEach(function(f){
       if (!document.getElementById(f).value.trim()) ok = false;
     });
-    ['province','organization'].forEach(function(id){
+    ['prefix','province','organization'].forEach(function(id){
       if (isOtherSelection_(document.getElementById(id).value) &&
           !document.getElementById(id + 'Other').value.trim()) ok = false;
     });
@@ -224,7 +227,7 @@
     if (!validate()) { alert('กรุณากรอกข้อมูลให้ครบและถูกต้อง'); return; }
     var payload = {
       lineUserId: lineUserId,
-      prefix: document.getElementById('prefix').value,
+      prefix: resolveVal('prefix'),
       firstName: document.getElementById('firstName').value.trim(),
       lastName: document.getElementById('lastName').value.trim(),
       position: resolveVal('position'),
