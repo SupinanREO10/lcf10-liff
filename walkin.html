@@ -241,7 +241,12 @@
     btn.disabled = true; btn.textContent = 'กำลังลงทะเบียน...';
     try {
       var res = await api('saveWalkIn', payload);
-      if (res.ok) showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + '\nระบบส่งการ์ดข้อมูลการลงทะเบียนให้ในแชท LINE แล้ว');
+      if (res.ok) {
+        var lineNotice = res.notificationSent === false
+          ? '\nบันทึกข้อมูลแล้ว แต่ยังส่งการ์ดเข้าแชท LINE ไม่สำเร็จ กรุณากลับไปที่แชทแล้วติดต่อจุดบริการ'
+          : '\nระบบส่งการ์ดสรุปการลงทะเบียนและการ์ดต้อนรับให้ในแชท LINE แล้ว';
+        showSuccess('ลงทะเบียนสำเร็จ\nหมายเลขคิว: ' + res.queueNumber + lineNotice);
+      }
       else if (res.reason === 'ALREADY_REGISTERED') showSuccess('ท่านลงทะเบียนแล้ว\nหมายเลขคิว: ' + res.queueNumber + '\nระบบจะใช้ข้อมูลรายการเดิมโดยไม่สร้างรายการซ้ำ');
       else showError(errMsg(res.reason, res.message));
     } catch (e) { showError(e.message || 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่'); }
