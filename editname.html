@@ -148,7 +148,7 @@
       if (!p || !p.ok) { showError(errMsg(p && p.reason, p && p.message)); return; }
       if (p.nameLocked) { showLocked(); return; }
       participant = p;
-      buildForm(p);
+      await buildForm(p);
       show('app');
     } catch (e) {
       dbg('❌ ' + e.message);
@@ -157,7 +157,13 @@
   }
 
   async function buildForm(p){
-    var prefixes = await api('getPrefixes');
+    // โหลดทุกตัวเลือกในคำขอเดียว และรอให้ฟอร์มพร้อมก่อนแสดงผล
+    // ป้องกัน select ว่าง/ถูกเติมค่าภายหลัง โดยเฉพาะบนมือถือใน LINE
+    var options = await api('getWalkInOptions');
+    if (!options || !options.ok) {
+      throw new Error(errMsg(options && options.reason, options && options.message));
+    }
+    var prefixes = Array.isArray(options.prefixes) ? options.prefixes : [];
     var sel = document.getElementById('prefix');
     sel.innerHTML = prefixes.map(function(x){
       return '<option value="'+x+'"'+(x===p.prefix?' selected':'')+'>'+x+'</option>';
@@ -165,9 +171,9 @@
     document.getElementById('firstName').value = p.firstName || '';
     document.getElementById('lastName').value = p.lastName || '';
 
-    var roles = await api('getRoles');
-    var provs = await api('getProvinces');
-    var orgs = await api('getOrganizations');
+    var roles = Array.isArray(options.roles) ? options.roles : [];
+    var provs = Array.isArray(options.provinces) ? options.provinces : [];
+    var orgs = Array.isArray(options.organizations) ? options.organizations : [];
     fillSelect('position', roles, p.position || '', 'positionOther', '— เลือก —');
     fillSelect('province', provs, p.province || '', 'provinceOther', '— เลือกจังหวัด —');
     fillSelect('organization', orgs, p.organization || '', 'organizationOther', '— เลือกหน่วยงาน —');
