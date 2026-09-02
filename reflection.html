@@ -321,6 +321,10 @@
         showAlreadySubmitted(state);
         return;
       }
+      if (state && state.ok && state.reflectionAvailable === false) {
+        showError(state.reflectionAvailabilityMessage || 'บันทึกการเรียนรู้ยังไม่เปิดให้ใช้งาน');
+        return;
+      }
       buildForm();
       show('app');
     } catch (e) {

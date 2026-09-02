@@ -151,6 +151,7 @@
       var profile=await liff.getProfile(); lineUserId=profile.userId;
       var state=await api('getStatus',{});
       if(!state.ok) throw new Error(errMsg(state.reason));
+      if(state.passportAvailable===false){showError(state.passportAvailabilityMessage||'อัปโหลดรูปภาพ Passport ยังไม่เปิดให้ใช้งาน');return;}
       if(state.passportImagesComplete) showSaved(state); else show('app');
     }catch(e){ dbg(e.message); showError('เชื่อมต่อระบบไม่ได้\n'+e.message); }
   }
